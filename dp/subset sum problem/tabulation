@@ -1,0 +1,22 @@
+bool isSubsetSum(vector<int>arr, int sum){
+        int n=arr.size();
+        vector<vector<bool>> dp(n,vector<bool>(sum+1,0));
+        for (int i=0;i<n;i++){
+            dp[i][0]=true;
+        }
+        // aur pehle row me sirf tab true hoga jab index 0 ho jayeg aaur sum ki value arr[0] ke barabar hogi
+        if (arr[0]<=sum){
+            dp[0][arr[0]]=true;
+        }
+        for (int i=1;i<n;i++){
+            for (int j=1;j<sum+1;j++){
+                bool pick=false;
+                if (arr[i]<=j){
+                    pick=dp[i-1][j-arr[i]];
+                }
+                bool notpick=dp[i-1][j];
+                dp[i][j]=pick|notpick;
+            }
+        }
+        return dp[n-1][sum];
+    }
