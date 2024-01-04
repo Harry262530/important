@@ -1,0 +1,31 @@
+int getMaxPathSum(vector<vector<int>> &matrix)
+{
+    int n=matrix.size();
+    int m=matrix[0].size();
+    vector<int> prev(m,0);
+    vector<int> temp(m,0);
+    for (int i=0;i<m;i++){
+        prev[i]=matrix[0][i];
+    }
+    for (int i=1;i<n;i++){
+        for (int j=0;j<m;j++){
+            int up=INT_MIN,left_diag=INT_MIN,right_diag=INT_MIN;
+            up=matrix[i][j]+prev[j];
+            if (j>0){
+                left_diag=matrix[i][j]+prev[j-1];
+            } 
+            if (j<m-1){
+                right_diag=matrix[i][j]+prev[j+1];
+            }
+            temp[j]=max(up,max(left_diag,right_diag));
+        }
+        prev=temp;
+    }
+
+
+    int ans=INT_MIN;
+    for (int i=0;i<m;i++){;
+        ans=max(ans,prev[i]);
+    }
+    return ans;
+}
