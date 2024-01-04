@@ -1,0 +1,34 @@
+bool canPartition(vector<int>& nums) {
+        int sum=0;
+        for (int i=0;i<nums.size();i++){
+            sum+=nums[i];
+        }
+        if (sum%2!=0){
+            return false;
+        }
+        
+        // return helper(nums.size()-1,sum/2,dp,nums);
+        int n=nums.size();
+        int target=sum/2;
+        vector<int> prev(target+1,0),temp(target+1,0);
+        for (int i=0;i<nums.size();i++){
+            prev[0]=1;
+        }
+        if (nums[0]<=target){
+            prev[nums[0]]=1;
+        }
+        // pehli row mai bs 1 index hi true hoga baki sab false honge
+        
+        for (int i=1;i<nums.size();i++){
+            for (int j=1;j<target+1;j++){
+                bool pick=false,notpick=false;
+                notpick=prev[j];
+                if (j>=nums[i]){
+                    pick=prev[j-nums[i]];
+                }
+                temp[j]=pick||notpick;
+            }
+            prev=temp;
+        }
+        return prev[target];
+    }
