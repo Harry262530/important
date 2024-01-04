@@ -1,0 +1,46 @@
+Given a set of N items, each with a weight and a value, represented by the array w and val respectively. Also, a knapsack with weight limit W.
+The task is to fill the knapsack in such a way that we can get the maximum profit. Return the maximum profit.
+Note: Each item can be taken any number of times.
+
+Example 1:
+
+Input: 
+N = 2
+W = 3
+val = {1, 1}
+wt = {2, 1}
+Output: 
+3
+Explanation: 
+1.Pick the 2nd element thrice.
+2.Total profit = 1 + 1 + 1 = 3. Also the total weight = 1 + 1 + 1  = 3 which is <= 3.
+
+
+class Solution{
+public:
+
+    int helper(int n,int w,vector<vector<int>> &dp,int val[],int wt[]){
+        // if (n==0 || w==0){
+        //     return 0;
+        // }
+        if (n == 0) {
+            // last item bcha hai to jitni baar jarurat pdegi le lenge
+        return (w / wt[0]) * val[0];
+    }
+        if (dp[n][w]!=-1){
+            return dp[n][w];
+        }
+        int notpick=helper(n-1,w,dp,val,wt);
+        int pick=INT_MIN;
+        if (w>=wt[n]){
+            pick=val[n]+helper(n,w-wt[n],dp,val,wt);
+        }
+        return dp[n][w]=max(pick,notpick);
+    }
+    
+    int knapSack(int N, int W, int val[], int wt[])
+    {
+        vector<vector<int>> dp(N,vector<int>(W+1,-1));
+        return helper(N-1,W,dp,val,wt);
+    }
+};
