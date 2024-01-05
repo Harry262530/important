@@ -1,0 +1,25 @@
+int findWays(vector<int>& arr, int k)
+{
+	// if array starts from 0, for that condition start by sorting it
+	sort(arr.begin(),arr.end(),greater<int>());
+	int n=arr.size();
+	vector<vector<int>> dp(n,vector<int>(k+1,0));
+	// return helper(n-1,k,dp,arr);
+	for (int i=0;i<n;i++){
+		dp[i][0]=1;
+	}
+	if (arr[0]<=k){
+		dp[0][arr[0]]=1;
+	}
+	for (int i=1;i<n;i++){
+		for (int j=1;j<k+1;j++){
+			int pick=0,notpick=0;
+			notpick=dp[i-1][j];
+			if (arr[i]<=j){
+				pick=dp[i-1][j-arr[i]];
+			}
+			dp[i][j]=(pick+notpick)%mods;
+		}
+	}
+	return dp[n-1][k];
+}
