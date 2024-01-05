@@ -1,0 +1,29 @@
+int minimumElements(vector<int> &num, int x)
+{
+    int n=num.size();
+    vector<int> prev(x+1,0);
+    vector<int> temp(x+1,0);
+    for (int i=0;i<=x;i++){
+        if (i%num[0]==0){
+            prev[i]=i/num[0];
+        }
+        else{
+            prev[i]=1e9;
+        }
+    }
+    for (int i=1;i<n;i++){
+        for (int j=0;j<=x;j++){
+            int notpick=prev[j];
+            int pick=INT_MAX;
+            if (j>=num[i]){
+                pick=1+temp[j-num[i]];
+            }
+            temp[j]=min(pick,notpick);
+        }
+        prev=temp;
+    }
+    if (prev[x]>=1e9){
+        return -1;
+    }
+    return prev[x];
+}
