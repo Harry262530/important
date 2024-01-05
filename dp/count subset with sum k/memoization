@@ -1,0 +1,57 @@
+You are given an array 'arr' of size 'n' containing positive integers and a target sum 'k'.
+
+
+
+Find the number of ways of selecting the elements from the array such that the sum of chosen elements is equal to the target 'k'.
+
+
+
+Since the number of ways can be very large, print it modulo 10 ^ 9 + 7.
+
+
+
+Example:
+Input: 'arr' = [1, 1, 4, 5]
+
+Output: 3
+
+Explanation: The possible ways are:
+[1, 4]
+[1, 4]
+[5]
+Hence the output will be 3. Please note that both 1 present in 'arr' are treated differently.
+
+
+
+int mods=1e9+7;
+int helper(int n,int target,vector<vector<int>> &dp,vector<int> &arr){
+	if (target==0){
+		return 1;
+	}
+	if (n==0){
+		return target==arr[n];
+	}
+	if(target<=0||n<=0){
+        return 0;
+    }
+	if (dp[n][target]!=-1){
+		return dp[n][target];
+	}
+	int pick=0,notpick=0;
+	notpick=helper(n-1,target,dp,arr);
+	if (arr[n]<=target){
+		pick=helper(n-1,target-arr[n],dp,arr);
+	}
+	return dp[n][target]=(pick+notpick)%mods;
+}
+
+
+int findWays(vector<int>& arr, int k)
+{
+	// if array starts from 0, for that condition start by sorting it
+	sort(arr.begin(),arr.end(),greater<int>());
+	int n=arr.size();
+	vector<vector<int>> dp(n,vector<int>(k+1,-1));
+	return helper(n-1,k,dp,arr);
+}
+
