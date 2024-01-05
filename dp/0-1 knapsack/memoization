@@ -1,0 +1,37 @@
+A thief is robbing a store and can carry a maximal weight of W into his knapsack. There are N items and the ith item weighs wi and is of value vi. Considering the constraints of the maximum weight that a knapsack can carry, you have to find and return the maximum value that a thief can generate by stealing items.
+
+Sample Input:
+1 
+4
+1 2 4 5
+5 4 8 6
+5
+Sample Output:
+13
+
+#include <bits/stdc++.h> 
+
+int helper(int n,int w,vector<vector<int>> &dp,vector<int> &weight,vector<int> &value){
+	if (n==0){
+		if (weight[n]<=w){
+			return value[n];
+		}
+		return 0;
+	}
+	// weight ka base case lgaane ki jarurat nhi hai kyuki pick me condition lgi hai ki wight negative me nhi ja skta
+	if (dp[n][w]!=-1){
+		return dp[n][w];
+	}
+	int pick=INT_MIN,notpick=INT_MIN;
+	notpick=helper(n-1,w,dp,weight,value);
+	if (w>=weight[n]){
+		pick=value[n]+helper(n-1,w-weight[n],dp,weight,value);
+	}
+	return dp[n][w]=max(pick,notpick);
+}
+
+int knapsack(vector<int> weight, vector<int> value, int n, int maxWeight) 
+{
+	vector<vector<int>> dp(n,vector<int>(maxWeight+1,-1));
+	return helper(n-1,maxWeight,dp,weight,value);
+}
