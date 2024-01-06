@@ -1,0 +1,40 @@
+Given a rod of length ‘N’ units. The rod can be cut into different sizes and each size has a cost associated with it. Determine the maximum cost obtained by cutting the rod and selling its pieces.
+
+Note:
+1. The sizes will range from 1 to ‘N’ and will be integers.
+
+2. The sum of the pieces cut should be equal to ‘N’.
+
+2
+5
+2 5 7 8 10
+8
+3 5 8 9 10 17 17 20
+Sample Output 1:
+12
+24
+
+
+int helper(int n,int l,vector<vector<int>> &dp,vector<int> arr){
+	// length of rod at any index is n+1 (if 2 is at index 0, means price of length 1 cut is 2 rupee)
+	if (n==0){
+		return l*arr[0];
+	}
+	if (dp[n][l]!=-1){
+		return dp[n][l];
+	}
+	int notpick=helper(n-1,l,dp,arr);
+	int pick=INT_MIN;
+	int rodl=n+1;
+	if (rodl<=l){
+		pick=arr[n]+helper(n,l-rodl,dp,arr);
+	}
+	return dp[n][l]=max(pick,notpick);
+}
+
+int cutRod(vector<int> &price, int n)
+{
+
+	vector<vector<int>> dp(n,vector<int>(n+1,-1));
+	return helper(n-1,n,dp,price);
+}
