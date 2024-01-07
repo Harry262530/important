@@ -1,0 +1,65 @@
+Given an input string (s) and a pattern (p), implement wildcard pattern matching with support for '?' and '*' where:
+
+'?' Matches any single character.
+'*' Matches any sequence of characters (including the empty sequence).
+The matching should cover the entire input string (not partial).
+
+ 
+
+Example 1:
+
+Input: s = "aa", p = "a"
+Output: false
+Explanation: "a" does not match the entire string "aa".
+Example 2:
+
+Input: s = "aa", p = "*"
+Output: true
+Explanation: '*' matches any sequence.
+
+
+class Solution {
+public:
+
+    bool only_stars(string &s,int j){
+        for (int i=0;i<=j;i++){
+            if (s[i]!='*'){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool helper(int n,int m,string &s1,string &s2,vector<vector<int>> &dp){
+        if (n<0 && m<0){
+            return true;
+        }
+        if (m<0 && n>=0){
+            return false;
+        }
+        if (n<0 && m>=0){
+            return only_stars(s2,m);
+        }
+        if (dp[n][m]!=-1){
+            return dp[n][m];
+        }
+        if (s1[n]==s2[m] || s2[m]=='?'){
+            return dp[n][m]=helper(n-1,m-1,s1,s2,dp);
+        }
+        else{
+            if (s2[m]=='*'){
+                return dp[n][m]=helper(n-1,m,s1,s2,dp)|helper(n,m-1,s1,s2,dp);
+            }
+            else{
+                return false;
+            }
+        }
+    }
+
+    bool isMatch(string s, string p) {
+        int n1=s.size();
+        int n2=p.size();
+        vector<vector<int>> dp(n1,vector<int> (n2,-1));
+        return helper(n1-1,n2-1,s,p,dp);
+    }
+};
