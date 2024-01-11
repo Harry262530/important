@@ -1,0 +1,29 @@
+class Solution {
+public:
+
+    int helper(int i,int k,vector<int> &arr,vector<int> &dp){
+        if (i==arr.size()){
+            return 0;
+        }
+        if (dp[i]!=-1){
+            return dp[i];
+        }
+        int maxans=INT_MIN;
+        int maxi=0;
+        int n=arr.size();
+        int len=0;
+        for (int ind=i;ind<min(i+k,n);ind++){
+            len++;
+            maxi=max(maxi,arr[ind]);
+            int sum=(len*maxi)+helper(ind+1,k,arr,dp);
+            maxans=max(maxans,sum);
+        }
+        return dp[i]=maxans;
+    }
+
+    int maxSumAfterPartitioning(vector<int>& arr, int k) {
+        int n=arr.size();
+        vector<int> dp(n+1,-1);
+        return helper(0,k,arr,dp);
+    }
+};
