@@ -1,0 +1,60 @@
+Given a string s, partition s such that every 
+substring
+ of the partition is a 
+palindrome
+.
+
+Return the minimum cuts needed for a palindrome partitioning of s.
+
+ 
+
+Example 1:
+
+Input: s = "aab"
+Output: 1
+Explanation: The palindrome partitioning ["aa","b"] could be produced using 1 cut.
+Example 2:
+
+Input: s = "a"
+Output: 0
+Example 3:
+
+Input: s = "ab"
+Output: 1
+
+class Solution {
+public:
+
+    bool ispal(int i,int j,string &s){
+        while (i<j){
+            if (s[i]!=s[j]){
+                return false;
+            }
+            else{
+                i++;
+                j--;
+            }
+        }
+        return true;
+    }
+
+    int helper(int i,int j,string &s){
+        if (i>=j){
+            return 0;
+        }
+        if (ispal(i,j,s)){
+            return 0;
+        }
+        int mini=1e9;
+        for (int k=i;k<j;k++){
+            int total=1+helper(i,k,s)+helper(k+1,j,s);
+            mini=min(total,mini);
+        }
+        return mini;
+    }
+
+    int minCut(string s) {
+        int n=s.size();
+        return helper(0,n-1,s);
+    }
+};
