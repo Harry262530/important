@@ -1,0 +1,82 @@
+vector<int> topView(Node *root)
+    {
+        map<int,int> map;
+        vector<int> ans;
+        // helper(0,root,map);
+        queue<pair<Node *,int>> q;
+        q.push({root,0});
+        while (!q.empty()){
+            auto x=q.front();
+            q.pop();
+            Node *node=x.first;
+            int line=x.second;
+            if (map.find(line)==map.end()){
+                map[line]=node->data;
+            }
+            if (x.first->left){
+                q.push({x.first->left,line-1});
+            }
+            if (x.first->right){
+                q.push({x.first->right,line+1});
+            }
+        }
+        for (auto x:map){
+            ans.push_back(x.second);
+        }
+        return ans;
+    }Given below is a binary tree. The task is to print the top view of binary tree. Top view of a binary tree is the set of nodes visible when the tree is viewed from the top. For the given below tree
+
+       1
+    /     \
+   2       3
+  /  \    /   \
+4    5  6   7
+
+Top view will be: 4 2 1 3 7
+Note: Return nodes from leftmost node to rightmost node. Also if 2 nodes are outside the shadow of the tree and are at same position then consider the left ones only(i.e. leftmost). 
+For ex - 1 2 3 N 4 5 N 6 N 7 N 8 N 9 N N N N N will give 8 2 1 3 as answer. Here 8 and 9 are on the same position but 9 will get shadowed.
+
+Example 1:
+
+Input:
+      1
+   /    \
+  2      3
+Output: 2 1 3
+Example 2:
+
+Input:
+       10
+    /      \
+  20        30
+ /   \    /    \
+40   60  90    100
+Output: 40 20 10 30 100
+
+vector<int> topView(Node *root)
+    {
+        map<int,int> map;
+        vector<int> ans;
+        // helper(0,root,map);
+        queue<pair<Node *,int>> q;
+        q.push({root,0});
+        while (!q.empty()){
+            auto x=q.front();
+            q.pop();
+            Node *node=x.first;
+            int line=x.second;
+            if (map.find(line)==map.end()){
+                map[line]=node->data;
+            }
+            if (x.first->left){
+                q.push({x.first->left,line-1});
+            }
+            if (x.first->right){
+                q.push({x.first->right,line+1});
+            }
+        }
+        for (auto x:map){
+            ans.push_back(x.second);
+        }
+        return ans;
+    }
