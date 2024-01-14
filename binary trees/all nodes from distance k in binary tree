@@ -1,0 +1,87 @@
+Given the root of a binary tree, the value of a target node target, and an integer k, return an array of the values of all nodes that have a distance k from the target node.
+
+You can return the answer in any order.
+
+ 
+
+Example 1:
+
+
+Input: root = [3,5,1,6,2,0,8,null,null,7,4], target = 5, k = 2
+Output: [7,4,1]
+Explanation: The nodes that are a distance 2 from the target node (with value 5) have values 7, 4, and 1.
+Example 2:
+
+Input: root = [1], tar
+
+
+class Solution {
+public:
+
+    void helper(TreeNode *root,map<TreeNode*,TreeNode*> &m){
+        if (root==NULL){
+            return ;
+        }
+        queue<TreeNode*> q1;
+        q1.push(root);
+        while (!q1.empty()){
+            int size=q1.size();
+            for (int i=0;i<size;i++){
+                auto x=q1.front();
+                q1.pop();
+                if (x->left){
+                    q1.push(x->left);
+                    m[x->left]=x;
+                }
+                if (x->right){
+                    q1.push(x->right);
+                    m[x->right]=x;
+                }
+            }
+        }
+    }
+
+    vector<int> distanceK(TreeNode* root, TreeNode* target, int k) {
+        map<TreeNode*,TreeNode*> m;
+        helper(root,m);
+        vector<int> ans;
+        if (root==NULL){
+            return ans;
+        }
+        map<TreeNode*,bool> visited;
+        queue<TreeNode*> q;
+        int dis=0;
+        q.push(target);
+        visited[target]=1;
+        while (!q.empty()){
+            int size=q.size();
+            if (dis==k){
+                // if dis is equal then thequeue will bw storing the values at that distance
+                break;
+            }
+            dis++;
+            for (int i=0;i<size;i++){
+                auto x=q.front();
+                q.pop();
+                if (x->left && !visited[x->left]){
+                    visited[x->left]=1;
+                    q.push(x->left);
+                }
+                if (x->right && !visited[x->right]){
+                    visited[x->right]=1;
+                    q.push(x->right);
+                }
+                if (m[x] && !visited[m[x]]){
+                    visited[m[x]]=1;
+                    q.push(m[x]);
+                }
+            }
+        }
+        while (!q.empty()){
+            auto x=q.front();
+            q.pop();
+            ans.push_back(x->val);
+        }
+        return ans;
+    }
+};
