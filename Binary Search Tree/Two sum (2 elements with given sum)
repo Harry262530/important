@@ -1,0 +1,73 @@
+Given the root of a binary search tree and an integer k, return true if there exist two elements in the BST such that their sum is equal to k, or false otherwise.
+
+ 
+
+Example 1:
+
+
+Input: root = [5,3,6,2,4,null,7], k = 9
+Output: true
+Example 2:
+
+
+Input: root = [5,3,6,2,4,null,7], k = 28
+Output: false
+
+
+Way 1 (using map)
+
+class Solution {
+public:
+
+    bool helper(TreeNode *root,set<int> &s,int k){
+        if (root==NULL){
+            return false;
+        }
+        if (s.count(k-root->val)){
+            return true;
+        }
+        s.insert(root->val);
+        return helper(root->left,s,k) || helper(root->right,s,k);
+    }
+
+    bool findTarget(TreeNode* root, int k) {
+        set<int> s;
+        return helper(root,s,k);
+    }
+};
+
+
+Way 2(using inorder traversal)
+
+class Solution {
+public:
+
+    void helper(TreeNode *root,vector<int> &inorder){
+        if (root==NULL){
+            return;
+        }
+        helper(root->left,inorder);
+        inorder.push_back(root->val);
+        helper(root->right,inorder);
+    }
+
+    bool findTarget(TreeNode* root, int k) {
+        vector<int> inorder;
+        helper(root,inorder);
+        int i=0,j=inorder.size()-1;
+        while (i<j){
+            int temp=inorder[i]+inorder[j];
+            if (temp==k){
+                return true;
+            }
+            if (temp<k){
+                i++;
+            }
+            else{
+                j--;
+            }
+        }
+        return false;
+    }  
+};
+
