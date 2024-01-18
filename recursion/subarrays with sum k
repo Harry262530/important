@@ -1,0 +1,54 @@
+You are given an array 'A' of size 'N' and an integer'K'’. You need to generate and return all subarrays of array ‘A’ whose sum = ‘K’.
+
+
+
+Note: In the output, you will see the 2D array lexicographically sorted.
+
+
+
+Example:
+Input: ‘N’ = 6 ‘K’ = 3
+‘A’ = [1, 2, 3, 1, 1, 1]
+Output: 3
+Explanation: Subarrays whose sum = ‘3’ are:
+[1, 2], [3], and [1, 1, 1]
+Detailed explanation ( Input/output format, Notes, Images )
+Sample Input 1:
+6 3
+1 2 3 1 1 1
+Sample Output 1:
+3
+Explanation Of Sample Input 1:
+Input: ‘N’ = 6 ‘K’ = 3
+‘A’ = [1, 2, 3, 1, 1, 1]
+Output: 3
+Explanation: Subarrays whose sum = ‘3’ are:
+[1, 2], [3], and [1, 1, 1]
+
+void helper(long long ind,int n,long long k,vector<int> &temp,vector<vector<int>> &ans,vector<int> &a){
+    if (ind>=n){
+        return;
+    }
+    long long sum=0;
+    for (long long i=ind;i<n;i++){
+        sum+=a[i];
+        temp.push_back(a[i]);
+        if (sum==k){
+            ans.push_back(temp);
+            break;
+        }
+        if (sum>k){
+            break;
+        }
+    }
+    temp.clear();
+    helper(ind+1,n,k,temp,ans,a);
+}
+
+vector<vector<int>> subarraysWithSumK(vector<int> a, long long k) {
+    int n=a.size();
+    vector<vector<int>> ans;
+    vector<int> temp;
+    helper(0,n,k,temp,ans,a);
+    return ans;
+}
