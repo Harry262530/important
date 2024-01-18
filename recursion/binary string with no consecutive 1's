@@ -1,0 +1,34 @@
+You have been given an integer 'N'. Your task is to generate and return all binary strings of length 'N' such that there are no consecutive 1's in the string.
+
+
+
+A binary string is that string which contains only ‘0’ and ‘1’.
+
+
+
+For Example:
+Let ‘N'=3, hence the length of the binary string would be 3. 
+
+We can have the following binary strings with no consecutive 1s:
+000 001 010 100 101 
+
+
+void helper(int ind,int allowed,string temp,vector<string> &ans){
+    if (ind<0){
+        ans.push_back(temp);
+        return;
+    }
+    helper(ind-1,1,temp+'0',ans);
+    if (allowed){
+        helper(ind-1,0,temp+'1',ans);
+    }
+    return;
+}
+
+
+vector<string> generateString(int N) {
+    vector<string> ans;
+    // 1 means that you can take 1
+    helper(N-1,1,"",ans);
+    return ans;
+}
