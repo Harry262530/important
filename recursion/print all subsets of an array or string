@@ -15,26 +15,31 @@ Example 2:
 Input: nums = [0]
 Output: [[],[0]]
 
-
 class Solution {
 public:
 
-    void helper(int i,vector<int> &nums,vector<vector<int>> &ans,vector<int> &temp){
-        if (i<0){
+    void helper(int ind,vector<int> &nums,vector<int> &temp,vector<vector<int>> &ans){
+        if (ind<0){
             ans.push_back(temp);
             return;
         }
-        temp.push_back(nums[i]);
-        helper(i-1,nums,ans,temp);
+
+        // take
+        temp.push_back(nums[ind]);
+        helper(ind-1,nums,temp,ans);
         temp.pop_back();
-        helper(i-1,nums,ans,temp);
+
+        // not take
+        helper(ind-1,nums,temp,ans);
+        return;
     }
 
     vector<vector<int>> subsets(vector<int>& nums) {
+        int n=nums.size();
         vector<vector<int>> ans;
         vector<int> temp;
-        int n=nums.size();
-        helper(n-1,nums,ans,temp);
+        helper(n-1,nums,temp,ans);
         return ans;
     }
 };
+
