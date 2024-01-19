@@ -1,33 +1,64 @@
+Given a collection of candidate numbers (candidates) and a target number (target), find all unique combinations in candidates where the candidate numbers sum to target.
+
+Each number in candidates may only be used once in the combination.
+
+Note: The solution set must not contain duplicate combinations.
+
+ 
+
+Example 1:
+
+Input: candidates = [10,1,2,7,6,1,5], target = 8
+Output: 
+[
+[1,1,6],
+[1,2,5],
+[1,7],
+[2,6]
+]
+Example 2:
+
+Input: candidates = [2,5,2,1,2], target = 5
+Output: 
+[
+[1,2,2],
+[5]
+]
+
+
 class Solution {
 public:
 
-    void helper(int i,int n,int target,vector<int> &arr,vector<vector<int>> &ans,vector<int> &temp){
+    void helper(int ind,int target,vector<int> &temp,vector<vector<int>> &ans,vector<int> &cand){
         if (target==0){
             ans.push_back(temp);
             return;
         }
-        if (i>=n){
+        if (ind==cand.size()){
             return;
         }
-        if (target>=arr[i]){
-            temp.push_back(arr[i]);
-            helper(i+1,n,target-arr[i],arr,ans,temp);
+        // if i am using an index then i can use its next duplicate index but if i am not using the index then i will not use its next duplicate index
+       
+
+    //    agar mai map use krunga for storing and finding duplicates then function call ho jayegi and fir jaake duplicates check krega, but is tarike se funcition call hi nhi hogi
+        if (target>=cand[ind]){
+            temp.push_back(cand[ind]);
+            helper(ind+1,target-cand[ind],temp,ans,cand);
             temp.pop_back();
         }
-        int x=arr[i],j=i+1;
-        while (j<n && arr[j]==x){
+
+        int j=ind+1,x=cand[ind];
+        while (j<cand.size() && cand[j]==x){
             j++;
         }
-        helper(j,n,target,arr,ans,temp);
-        
+        helper(j,target,temp,ans,cand);
     }
 
     vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
         sort(candidates.begin(),candidates.end());
         vector<vector<int>> ans;
         vector<int> temp;
-        int n=candidates.size();
-        helper(0,n,target,candidates,ans,temp);
+        helper(0,target,temp,ans,candidates);
         return ans;
     }
 };
