@@ -1,0 +1,23 @@
+vector<int> getSecondOrderElements(int n, vector<int> arr) {
+    int firstl=INT_MIN,secondl=INT_MIN;
+    for (int i=0;i<n;i++){
+        if (arr[i]>firstl){
+            secondl=firstl;
+            firstl=arr[i];
+        }
+        else if (arr[i]>secondl && arr[i]!=firstl){
+            secondl=arr[i];
+        }
+    }
+    int firsts=INT_MAX,seconds=INT_MAX;
+    for (int i=0;i<n;i++){
+        if (arr[i]<firsts){
+            seconds=firsts;
+            firsts=arr[i];
+        }
+        else if (arr[i]<seconds && arr[i]!=firsts){
+            seconds=arr[i];
+        }
+    }
+    return {secondl,seconds};
+}
