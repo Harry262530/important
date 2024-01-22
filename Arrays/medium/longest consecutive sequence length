@@ -1,0 +1,43 @@
+Problem statement
+There is an integer array ‘A’ of size ‘N’.
+
+A sequence is successive when the adjacent elements of the sequence have a difference of 1.
+
+You must return the length of the longest successive sequence.
+
+Note:
+
+You can reorder the array to form a sequence. 
+For example,
+
+
+Explain
+Input:
+A = [5, 8, 3, 2, 1, 4], N = 6
+Output:
+5
+Explanation: 
+The resultant sequence can be 1, 2, 3, 4, 5.    
+The length of the sequence is 5.
+
+
+int longestSuccessiveElements(vector<int>&a) {
+    int n=a.size();
+    unordered_set<int> s;
+    for (int i=0;i<n;i++){
+        s.insert(a[i]);
+    }
+    int ans=1;
+    for (auto x:s){
+        if (s.find(x-1)==s.end()){
+            int count=1;
+            int temp=x;
+            while (s.find(temp+1)!=s.end()){
+                count++;
+                temp++;
+            }
+            ans=max(ans,count);
+        }
+    }
+    return ans;
+}
