@@ -1,0 +1,32 @@
+Given an array of integers nums and an integer k, return the total number of subarrays whose sum equals to k.
+
+A subarray is a contiguous non-empty sequence of elements within an array.
+
+ 
+
+Example 1:
+
+Input: nums = [1,1,1], k = 2
+Output: 2
+Example 2:
+
+Input: nums = [1,2,3], k = 3
+Output: 2
+
+
+  class Solution {
+public:
+    int subarraySum(vector<int>& nums, int k) {
+        int presum=0,ans=0;
+        unordered_map<int,int> mp;
+        // for the initial sum=k there should be value in map for mp[0]
+        mp[0]=1;
+        for (int i=0;i<nums.size();i++){
+            presum+=nums[i];
+            int temp=presum-k;
+            ans+=mp[temp];
+            mp[presum]++;
+        }
+        return ans;
+    }
+};
