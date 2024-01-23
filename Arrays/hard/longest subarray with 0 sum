@@ -1,0 +1,40 @@
+Ninja is given an array ‘Arr’ of size ‘N’. You have to help him find the longest subarray of ‘Arr’, whose sum is 0. You must return the length of the longest subarray whose sum is 0.
+
+
+
+For Example:
+
+Explain
+For N = 5, and Arr = {1, -1, 0, 0, 1}, 
+We have the following subarrays with zero sums: 
+{{1, -1}, {1, -1, 0}, {1, -1, 0, 0}, {-1, 0, 0, 1}, {0}, {0, 0}, {0}}
+Among these subarrays, {1, -1, 0, 0} and {-1, 0, 0, 1} are the longest subarrays with their sum equal to zero. Hence the answer is 4.
+
+#include<vector>
+#include <bits/stdc++.h>
+
+int getLongestZeroSumSubarrayLength(vector<int> &arr){
+	int n=arr.size();
+	unordered_map<int,int> mp;
+	int ans=0,presum=0;
+
+// approach: agar hamko kisi bhi index mai jo sum mila hai, agar vo pehle bhi kahi mila hua hai, to us index se is index tak ka sem zero hoga
+
+	for (int i=0;i<n;i++){
+		presum+=arr[i];
+		if (presum==0){
+			ans=max(ans,i+1);
+			//agar i=5 hai to toal emement 6 honge
+		}
+		else{
+			if (mp.find(presum)!=mp.end()){
+				ans=max(ans,i-mp[presum]);
+			}
+			else{
+				mp[presum]=i;
+			}
+		}
+	}
+	return ans;
+	
+}
