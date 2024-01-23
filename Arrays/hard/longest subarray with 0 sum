@@ -10,7 +10,7 @@ We have the following subarrays with zero sums:
 {{1, -1}, {1, -1, 0}, {1, -1, 0, 0}, {-1, 0, 0, 1}, {0}, {0, 0}, {0}}
 Among these subarrays, {1, -1, 0, 0} and {-1, 0, 0, 1} are the longest subarrays with their sum equal to zero. Hence the answer is 4.
 
-#include<vector>
+
 #include <bits/stdc++.h>
 
 int getLongestZeroSumSubarrayLength(vector<int> &arr){
@@ -31,6 +31,7 @@ int getLongestZeroSumSubarrayLength(vector<int> &arr){
 				ans=max(ans,i-mp[presum]);
 			}
 			else{
+				// agar nhi mila tabhi update krna hai, agar har baar update krte rhenge to greatest jo ki pehli mil gya tha uska index nhi rhega
 				mp[presum]=i;
 			}
 		}
