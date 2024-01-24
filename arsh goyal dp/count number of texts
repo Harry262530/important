@@ -1,0 +1,47 @@
+Alice is texting Bob using her phone. The mapping of digits to letters is shown in the figure below.
+
+
+In order to add a letter, Alice has to press the key of the corresponding digit i times, where i is the position of the letter in the key.
+
+For example, to add the letter 's', Alice has to press '7' four times. Similarly, to add the letter 'k', Alice has to press '5' twice.
+Note that the digits '0' and '1' do not map to any letters, so Alice does not use them.
+However, due to an error in transmission, Bob did not receive Alice's text message but received a string of pressed keys instead.
+
+For example, when Alice sent the message "bob", Bob received the string "2266622".
+Given a string pressedKeys representing the string received by Bob, return the total number of possible text messages Alice could have sent.
+
+Since the answer may be very large, return it modulo 109 + 7.
+
+
+class Solution {
+public:
+int mod=1e9+7;
+int dp[100005];
+    int helper(int ind,string &pressedKeys){
+        if (ind==pressedKeys.size()){
+            return 1;
+        }
+        if (dp[ind]!=-1){
+            return dp[ind];
+        }
+        int numbe = (pressedKeys[ind] == '7' || pressedKeys[ind] == '9') ? 4 : 3;
+        long long count=0;
+        long long temp=ind,press=0;
+        while (press<numbe && pressedKeys[temp]==pressedKeys[ind]){
+            press++;
+            // index plus ho rha hai to jab last index pe same nhi hoga to kud hi agle index pe call ho jayegi
+            temp++;
+            count+=helper(temp,pressedKeys)%mod;
+        }
+
+        return dp[ind]=count%mod;
+    }
+
+    int countTexts(string pressedKeys) {
+        int n=pressedKeys.size();
+        memset(dp, -1, sizeof(dp));
+        return helper(0,pressedKeys)%mod;
+    }
+};
+
+  
