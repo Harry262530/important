@@ -1,0 +1,42 @@
+Given an integer n, return the number of structurally unique BST's (binary search trees) which has exactly n nodes of unique values from 1 to n.
+
+ 
+
+Example 1:
+
+
+Input: n = 3
+Output: 5
+Example 2:
+
+Input: n = 1
+Output: 1
+
+
+Basic Intuition for this solution is using Dynamic Programming with memorization. For all possible values of i, consider i as root, then [1 . . . i-1] numbers will fall in the left subtree and [i+1 . . . N] numbers will fall in the right subtree.
+
+Then all possible BST’s will be
+numTrees(N) = summation of (numTrees(i-1)*numTrees(N-i)) where i lies in the range [1, N].
+
+class Solution {
+public:
+
+    int helper(int ind,vector<int> &dp){
+        if (ind==0 || ind==1){
+            return 1;
+        }
+        if (dp[ind]!=-1){
+            return dp[ind];
+        }
+        int total=0;
+        for (int i=1;i<=ind;i++){
+            total+=helper(i-1,dp)*helper(ind-i,dp);
+        }
+        return dp[ind]=total;
+    }
+
+    int numTrees(int n) {
+        vector<int> dp(n+1,-1);
+        return helper(n,dp);
+    }
+};
