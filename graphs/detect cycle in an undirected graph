@@ -1,0 +1,85 @@
+Given an undirected graph of 'V' vertices and 'E' edges. Return true if the graph contains a cycle or not, else return false.
+
+
+
+Note:
+
+There are no self-loops(an edge connecting the vertex to itself) in the given graph.
+Example:
+Given N=3, M =2, and edges are (1, 2) and (2, 3), with nodes 1, 2, and 3.
+
+We return false because the given graph does not have any cycle.
+
+
+
+
+// } Driver Code Ends
+class Solution {
+  public:
+    // Function to detect cycle in an undirected graph.
+    
+    
+    Using bfs
+    bool bfs(int s,vector<int> adj[],vector<int> &visited){
+        visited[s]=1;
+        queue<pair<int,int>> q;
+        q.push({s,-1});
+        while (!q.empty()){
+            int node=q.front().first;
+            int parent=q.front().second;
+            q.pop();
+            for (auto x:adj[node]){
+                if (!visited[x]){
+                    visited[x]=1;
+                    q.push({x,node});
+                }
+                else if (x!=parent){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    bool isCycle(int V, vector<int> adj[]) {
+        
+       vector<int> visited(V,0);
+        for (int i=0;i<V;i++){
+            if (!visited[i]){
+                bool isok=bfs(i,adj,visited);
+                if (isok==true){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    
+    
+    using dfs
+    bool dfs(vector<bool> &visited,vector<int> adj[],int src,int parent){
+        visited[src]=true;
+        for (auto x:adj[src]){
+            if (visited[x]!=true){
+                if (dfs(visited,adj,x,src)==true){
+                    return true;
+                }
+            }
+            else if (x!=parent){
+                return true;
+            }
+        }
+        return false;
+    }
+    bool isCycle(int V, vector<int> adj[]) {
+        vector<bool> visited(V,false);
+        for (int i=0;i<V;i++){
+            if (visited[i]!=true){
+                if (dfs(visited,adj,i,-1)==true){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+};
