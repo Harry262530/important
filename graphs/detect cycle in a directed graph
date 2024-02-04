@@ -1,0 +1,70 @@
+Given a directed graph, check whether the graph contains a cycle or not. Your function should return true if the given graph contains at least one cycle, else return false.
+
+Detailed explanation ( Input/output format, Notes, Images )
+Constraints:
+
+Explain
+1 <= T <= 10
+1 <= V <= 10^3
+0 <= E <= 10^3
+0 <= A, B < V
+
+Time Limit: 1 sec
+Sample Input 1:.
+
+Explain
+2
+4 4
+0 1
+1 2
+2 3
+3 0
+3 3
+1 0
+1 2
+0 2
+Sample Output 1:
+true
+false
+Explanation for Sample Input 1:
+In the first case,
+From node 0 we can reach 0 again by following this sequence of nodes in the path: 0,1,2,3,0. As we can see in the image below.
+
+
+
+  #include <bits/stdc++.h>
+
+bool helper(int node,vector<int> &visited,vector<int> &backtrack,vector<int> adj[]){
+	visited[node]=1;
+	backtrack[node]=1;
+	for (auto x:adj[node]){
+		if (visited[x]==0){
+			if (helper(x,visited,backtrack,adj)){
+				return true;
+			}
+		}
+		else if (backtrack[x]==1){
+			return true;
+		}
+	}
+	backtrack[node]=0;
+	return false;
+}
+
+bool isCyclic(vector<vector<int>>& edges, int v, int e)
+{
+	vector<int> adj[v];
+	for (int i=0;i<e;i++){
+		adj[edges[i][0]].push_back(edges[i][1]);
+	}
+	vector<int> visited(v,0);
+	vector<int> backtrack(v,0);
+	for (int i=0;i<v;i++){
+		if (visited[i]==0){
+			if (helper(i,visited,backtrack,adj)){
+				return true;
+			}
+		}
+	}
+	return false;
+}
