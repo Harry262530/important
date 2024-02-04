@@ -1,0 +1,56 @@
+Given an m x n binary matrix mat, return the distance of the nearest 0 for each cell.
+
+The distance between two adjacent cells is 1.
+
+ 
+
+Example 1:
+
+
+Input: mat = [[0,0,0],[0,1,0],[0,0,0]]
+Output: [[0,0,0],[0,1,0],[0,0,0]]
+Example 2:
+
+
+Input: mat = [[0,0,0],[0,1,0],[1,1,1]]
+Output: [[0,0,0],[0,1,0],[1,2,1]]
+
+
+class Solution {
+public:
+    vector<vector<int>> updateMatrix(vector<vector<int>>& mat) {
+
+        //i was searching for 1 and pushing inside queue but instead search for 0 and push them and then go for searching bfs for 1
+        int n=mat.size();
+        int m=mat[0].size();
+        vector<vector<int>> ans(n,vector<int>(m,0));
+        vector<vector<int>> visited(n,vector<int>(m,0));
+        queue<pair<int,pair<int,int>>> q;
+        for (int i=0;i<n;i++){
+            for (int j=0;j<m;j++){
+                if (mat[i][j]==0){
+                    visited[i][j]=1;
+                    q.push({i,{j,0}});
+                }
+            }
+        }
+        vector<int> xx{0,-1,0,1};
+        vector<int> yy{-1,0,1,0};
+        while (!q.empty()){
+            int x=q.front().first;
+            int y=q.front().second.first;
+            int dis=q.front().second.second;
+            q.pop();
+            ans[x][y]=dis;
+            for (int i=0;i<4;i++){
+                int nx=x+xx[i];
+                int ny=y+yy[i];
+                if (nx<n && nx>=0 && ny<m && ny>=0 && visited[nx][ny]==0){
+                    visited[nx][ny]=1;
+                    q.push({nx,{ny,dis+1}});
+                }
+            }
+        }
+        return ans;
+    }
+};
