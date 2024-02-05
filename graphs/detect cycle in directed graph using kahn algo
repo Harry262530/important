@@ -1,0 +1,76 @@
+You are given a directed graph having ‘N’ nodes. A matrix ‘EDGES’ of size M x 2 is given which represents the ‘M’ edges such that there is an edge directed from node EDGES[i][0] to node EDGES[i][1].
+
+Find whether the graph contains a cycle or not, return true if a cycle is present in the given directed graph else return false.
+
+For Example :
+In the following directed graph has a cycle i.e. B->C->E->D->B.
+
+Note :
+
+Explain
+1. The cycle must contain at least two nodes.
+2. It is guaranteed that the given graph has no self-loops in the graph.
+3. The graph may or may not be connected.
+4. Nodes are numbered from 1 to N.
+5. Your solution will run on multiple test cases. If you are using global variables make sure to clear them.
+Detailed explanation ( Input/output format, Notes, Images )
+Constraints :
+
+Explain
+1 ≤ T ≤ 5
+
+2 <= N <= 100
+1 <= M <= min(100,N(N-1)/2)
+1 <= EDGES[i][0], EDGES[i][1] <= N
+
+Where ‘T’ is the number of test cases.
+
+Time Limit: 1 sec
+Sample Input 1 :
+
+Explain
+1
+5
+6
+1 2
+4 1
+2 4
+3 4
+5 2
+1 3
+Sample Output 1 :
+true
+
+
+#include <bits/stdc++.h>
+
+int detectCycleInDirectedGraph(int n, vector < pair < int, int >> & edges) {
+  vector<int> adj[n+1];
+  vector<int> indegree(n+1);
+  for (auto x:edges){
+    adj[x.first].push_back(x.second);
+    indegree[x.second]++;
+  }
+  queue<int> q;
+  for (int i=1;i<n+1;i++){
+    if (indegree[i]==0){
+      q.push(i);
+    }
+  }
+  vector<int> topo;
+  while (!q.empty()){
+    int temp=q.front();
+    q.pop();
+    topo.push_back(temp);
+    for (auto x:adj[temp]){
+      indegree[x]--;
+      if (indegree[x]==0){
+        q.push(x);
+      }
+    }
+  }
+  if (topo.size()!=n){
+    return 1;
+  }
+  return 0;
+}
