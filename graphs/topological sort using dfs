@@ -1,0 +1,60 @@
+Problem statement
+Given a DAG(direct acyclic graph), print Topological Sorting of a given graph
+
+Detailed explanation ( Input/output format, Notes, Images )
+Constraints:
+
+Explain
+1 <= T <= 10
+1 <= V <= 1000
+0 <= E <= 3000
+0 <= U, V <= V-1
+
+Time Limit: 1sec
+Sample Input 1:
+
+Explain
+1
+5 4
+0 2
+1 2
+3 1
+0 4
+Sample Output 1:
+Correct
+Sample Output 1 Explanation:
+One correct sort order is : 3 1 0 4 2.
+
+
+#include<bits/stdc++.h>
+
+void dfs(int node,vector<int> &visited,vector<int> adj[],stack<int> &s){
+    visited[node]=1;
+    for (auto x:adj[node]){
+        if (!visited[x]){
+            dfs(x,visited,adj,s);
+        }
+    }
+    s.push(node);
+}
+
+vector<int> topologicalSort(vector<vector<int>> &graph, int edges, int nodes) {
+    stack<int> s;
+    vector<int> adj[nodes];
+    for (int i=0;i<edges;i++){
+        adj[graph[i][0]].push_back(graph[i][1]);
+    }
+    vector<int> visited(nodes,0);
+    for (int i=0;i<nodes;i++){
+        if (visited[i]==0){
+            dfs(i,visited,adj,s);
+        }
+    }
+    vector<int> ans;
+    while (!s.empty()){
+        int temp=s.top();
+        s.pop();
+        ans.push_back(temp);
+    }
+    return ans;
+}
