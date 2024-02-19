@@ -1,0 +1,56 @@
+You are given a directed acyclic graph of 'N' vertices(0 to 'N' - 1) and 'M' weighted edges.
+
+
+
+Return an array that stores the distance(sum of weights) of the shortest path from vertex 0 to all vertices, and if it is impossible to reach any vertex, then assign -1 as distance.
+
+
+
+For Example:
+'N' = 3, 'M' = 3, 'edges' = [0, 1, 2], [1, 2, 3], [0, 2, 6]].
+
+Distance (0 to 0) = 0.
+Distance (0 to 1) = 2.
+Distance (0 to 2) = 0->1 + 1->2 = 2+3 = 5.
+So our answer is [0, 2, 5].
+Detailed explanation ( Input/output format, Notes, Images )
+Sample Input 1:
+3 3
+2 0 4
+0 1 3
+2 1 2
+Sample Output 1:
+0 3 -1
+
+
+#include <bits/stdc++.h>
+
+vector<int> shortestPathInDAG(int n, int m, vector<vector<int>> &edges)
+{
+    vector<pair<int,int>> adj[n];
+    for (auto it:edges){
+        adj[it[0]].push_back({it[1],it[2]});
+    }
+    vector<int> dist(n,INT_MAX);
+    queue<int> q;
+    q.push(0);
+    dist[0]=0;
+    while (!q.empty()){
+        auto temp=q.front();
+        q.pop();
+        for (auto x:adj[temp]){
+            int adjnode=x.first;
+            int adjdis=x.second;
+            if (dist[temp]+adjdis<dist[adjnode]){
+                dist[adjnode]=dist[temp]+adjdis;
+                q.push(adjnode);
+            }
+        }
+    }
+    for (int i=0;i<n;i++){
+        if (dist[i]==INT_MAX){
+            dist[i]=-1;
+        }
+    }
+    return dist;
+}
