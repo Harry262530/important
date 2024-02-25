@@ -1,0 +1,14 @@
+Node * deleteLastNode(Node *head) {
+    if (head==NULL || head->next==NULL){
+        return NULL;
+    }
+    Node *temp=NULL;
+    Node *curr=head;
+    while (curr->next){
+        temp=curr;
+        curr=curr->next;
+    }
+    temp->next=NULL;
+    curr->prev=NULL;
+    return head;
+}
