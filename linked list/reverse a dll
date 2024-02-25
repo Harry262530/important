@@ -1,0 +1,34 @@
+You are given a doubly-linked list of size 'N', consisting of positive integers. Now your task is to reverse it and return the head of the modified list.
+
+
+
+Note:
+A doubly linked list is a kind of linked list that is bidirectional, meaning it can be traversed in both forward and backward directions.
+Example:
+
+
+Explain
+Input: 
+4
+4 3 2 1
+
+This means you have been given doubly linked list of size 4 = 4 <-> 3 <-> 2 <-> 1.
+
+Output: 
+1 2 3 4
+
+Node* reverseDLL(Node* head)
+{   
+    if (head==NULL || head->next==NULL){
+        return head;
+    }
+    Node *temp=NULL;
+    Node *curr=head;
+    while (curr){
+        temp=curr->prev;
+        curr->prev=curr->next;
+        curr->next=temp;
+        curr=curr->prev;
+    }  
+    return temp->prev;
+}
