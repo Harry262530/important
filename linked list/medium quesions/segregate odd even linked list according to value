@@ -1,0 +1,47 @@
+odd elements first
+
+class Solution {
+public:
+    ListNode* oddEvenList(ListNode* head) {
+        if (head==NULL || head->next==NULL){
+            return head;
+        }
+        ListNode *oddhead=NULL,*oddtail=NULL,*evenhead=NULL,*eventail=NULL;
+        ListNode *curr=head;
+        while (curr){
+            int x=curr->val;
+            if (x%2==0){
+                if (evenhead==NULL){
+                    eventail=evenhead=curr;
+                }
+                else{
+                    eventail->next=curr;
+                    eventail=curr;
+                }
+            }
+            else{
+                if (oddhead==NULL){
+                    oddtail=oddhead=curr;
+                }
+                else{
+                    oddtail->next=curr;
+                    oddtail=curr;
+                }
+            }
+            curr=curr->next;
+        }
+        if (oddhead){
+            oddtail->next=evenhead;
+        }
+        if (evenhead){
+            eventail->next=NULL;
+        }
+        if (oddhead){
+            head=oddhead;
+        }
+        else{
+            head=evenhead;
+        }
+        return head;
+    }
+};
