@@ -1,0 +1,59 @@
+You're given a positive integer represented in the form of a singly linked-list of digits. The length of the number is 'n'.
+
+
+
+Add 1 to the number, i.e., increment the given number by one.
+
+
+
+The digits are stored such that the most significant digit is at the head of the linked list and the least significant digit is at the tail of the linked list.
+
+
+
+Example:
+
+Explain
+Input: Initial Linked List: 1 -> 5 -> 2
+
+Output: Modified Linked List: 1 -> 5 -> 3
+
+Explanation: Initially the number is 152. After incrementing it by 1, the number becomes 153.
+
+
+Node* reverse(Node *head){
+    if (head==NULL || head->next==NULL){
+        return head;
+    }
+    Node *prev=NULL;
+    Node *curr=head;
+    while (curr){
+        Node *x=curr->next;
+        curr->next=prev;
+        prev=curr;
+        curr=x;
+    }
+    return prev;
+}
+
+
+Node *addOne(Node *head)
+{
+    Node *newhead=reverse(head);
+    int carry=1;
+    Node *temp=newhead;
+    Node *prev=NULL;
+    while (temp){
+        int x=temp->data+carry;
+        int value=x%10;
+        carry=x/10;
+        temp->data=value;
+        prev=temp;
+        temp=temp->next;
+    }
+    if (carry>0){
+        Node *extra=new Node(carry);
+        prev->next=extra;
+    }
+    head=reverse(newhead);
+    return head;
+}
