@@ -1,0 +1,87 @@
+Given a linked list of 'N' nodes, where each node has an integer value that can be 0, 1, or 2. You need to sort the linked list in non-decreasing order and the return the head of the sorted list.
+
+
+
+Example:
+Given linked list is 1 -> 0 -> 2 -> 1 -> 2. 
+The sorted list for the given linked list will be 0 -> 1 -> 1 -> 2 -> 2.
+
+
+Detailed explanation ( Input/output format, Notes, Images )
+Sample Input 1:
+7
+1 0 2 1 0 2 1
+
+
+Sample Output 1:
+0 0 1 1 1 2 2
+
+
+Explanation Of Sample Input 1:
+
+Explain
+Input: 1 -> 0 -> 2 -> 1 -> 0 -> 2 -> 1
+
+Output: 0 -> 0 -> 1 -> 1 -> 1 -> 2 -> 2
+
+
+Node* sortList(Node *head){
+    Node *zerohead=new Node(-1);
+    // mai yaha -1 value lera hu to mujhe last me har head ke next ko denote krna pdega agar me null leke start krta to simple head ko leke kr skta tha
+    Node *zerotail=zerohead;
+    Node *onehead=new Node(-1);
+    Node *onetail=onehead;
+    Node *twohead=new Node(-1);
+    Node *twotail=twohead;
+    Node *curr=head;
+    while (curr){
+        int x=curr->data;
+        if (x==0){
+            if (zerohead==NULL){
+                zerohead=zerotail=curr;
+            }
+            else{
+                zerotail->next=curr;
+                zerotail=curr;
+            }
+        }
+        else if(x==1){
+            if (onehead==NULL){
+                onehead=onetail=curr;
+            }
+            else{
+                onetail->next=curr;
+                onetail=curr;
+            }
+        }
+        else{
+            if (twohead==NULL){
+                twohead=twotail=curr;
+            }
+            else{
+                twotail->next=curr;
+                twotail=curr;
+            }
+        }
+        curr=curr->next;
+    }
+    if (zerohead){
+        zerotail->next=onehead->next;
+    }
+    if (onehead){
+        onetail->next=twohead->next;
+    }
+    if (twohead){
+        twotail->next=NULL;
+    }
+    if (zerohead){
+        head=zerohead->next;
+    }
+    else if (onehead){
+        head=onehead->next;
+    }
+    else{
+        head=twohead->next;
+    }
+    return head;
+}
