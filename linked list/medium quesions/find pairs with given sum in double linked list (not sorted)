@@ -1,0 +1,14 @@
+vector<pair<int, int>> findPairs(Node* head, int k)
+{
+    unordered_set<int> map;
+    Node *curr=head;
+    vector<pair<int,int>> ans;
+    while (curr){
+        if (map.find(k-curr->data)!=map.end()){
+            ans.push_back({k-curr->data,curr->data});
+        }
+        map.insert(curr->data);
+        curr=curr->next;
+    }
+    return ans;
+}
