@@ -1,0 +1,62 @@
+Given the head of a linked list, rotate the list to the right by k places.
+
+ 
+
+Example 1:
+
+
+Input: head = [1,2,3,4,5], k = 2
+Output: [4,5,1,2,3]
+Example 2:
+
+
+Input: head = [0,1,2], k = 4
+Output: [2,0,1]
+
+
+1st way (khud se)
+
+class Solution {
+public:
+
+    int count(ListNode *head){
+        int count=0;
+        while (head){
+            count++;
+            head=head->next;
+        }
+        return count;
+    }
+
+    ListNode *reverse(ListNode *head){
+        ListNode *prev=NULL;
+        ListNode *next=NULL;
+        while (head){
+            next=head->next;
+            head->next=prev;
+            prev=head;
+            head=next;
+        }
+        return prev;
+    }
+
+    ListNode* rotateRight(ListNode* head, int k) {
+        if (head==NULL || head->next==NULL || k==0){
+            return head;
+        }
+        int x=count(head);
+        k=k%x;
+        ListNode *dummy=new ListNode(-101);
+        dummy->next=head;
+        ListNode *curr=dummy;
+        for (int i=0;i<x-k;i++){
+            curr=curr->next;
+        }
+        ListNode *newh=curr->next;
+        curr->next=NULL;
+        dummy->next=reverse(head);
+        head->next=reverse(newh);
+        dummy->next=reverse(dummy->next);
+        return dummy->next;
+    }
+};
