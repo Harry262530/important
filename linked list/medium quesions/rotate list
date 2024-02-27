@@ -60,3 +60,36 @@ public:
         return dummy->next;
     }
 };
+
+
+
+
+2nd way 
+    int count(ListNode *head){
+        ListNode *curr=head;
+        int count=1;
+        while (curr->next){
+            count++;
+            curr=curr->next;
+        }
+        curr->next=head;
+        return count;
+    }
+
+    ListNode* rotateRight(ListNode* head, int k) {
+        if (head==NULL || head->next==NULL || k==0){
+            return head;
+        }
+        int x=count(head);
+        k=k%x;
+        ListNode *dummy=new ListNode(-101);
+        // dummy->next=head;
+        ListNode *curr=head;
+        for (int i=0;i<x-k-1;i++){
+            curr=curr->next;
+        }
+        dummy->next=curr->next;
+        curr->next=NULL;
+        return dummy->next;
+    }
+};
