@@ -1,0 +1,55 @@
+A doubly-linked list is a data structure that consists of sequentially linked nodes, and the nodes have reference to both the previous and the next nodes in the sequence of nodes.
+
+
+
+You are given a sorted doubly linked list of size 'n'.
+
+
+
+Remove all the duplicate nodes present in the linked list.
+
+
+
+Example :
+
+Explain
+Input: Linked List: 1 <-> 2 <-> 2 <-> 2 <-> 3
+
+Output: Modified Linked List: 1 <-> 2 <-> 3
+
+Explanation: We will delete the duplicate values ‘2’ present in the linked list.
+
+
+Detailed explanation ( Input/output format, Notes, Images )
+Sample Input 1 :
+5
+1 2 2 2 3
+
+
+Sample Output 1 :
+1 2 3
+
+
+Node * removeDuplicates(Node *head)
+{
+    if (head==NULL || head->next==NULL){
+        return head;
+    }
+    Node *temp=head;
+    Node *curr=head->next;
+    while (curr){
+        if (temp->data==curr->data){
+            curr=curr->next;
+        }
+        else{
+            temp->next=curr;
+            curr->prev=temp;
+            temp=curr;
+            curr=curr->next;
+        }
+    }
+    // agar last me duplicate ho jaaye to compare krne ko kuch ni bchgea aur curr null chla jayega to saare duplicate element aa jayenge now 
+    // temp is storing last non duplicate element so uska next ko null kr do
+    temp->next=NULL;
+    return head;
+}
