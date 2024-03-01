@@ -1,0 +1,58 @@
+You are given a string denoting a valid Prefix expression containing ‘+’, ’-’, ’*’, ‘/’ and lowercase letters.
+
+
+
+Convert the given Prefix expression into an Infix expression.
+
+
+
+Note:
+
+Explain
+Infix notation is a method of writing mathematical expressions in which operators are placed between operands. For example, "a + b" represents the addition of a and b.
+
+Prefix notation is a method of writing mathematical expressions in which operators are placed before the operands. For example, "+ a b" represents the addition of a and b.
+
+Expression contains lowercase English letters, ‘+’, ‘-’, ‘*’, and  ‘/’. 
+
+
+Example:
+
+Explain
+Input: /-ab+-cde
+
+Output: ((a-b)/((c-d)+e))
+
+Explanation:
+In this test case, there are four operators ‘/’, ‘-’, ‘+’, ‘-’.
+Prefix expression:  /-ab+-cde. 
+The operator between  ‘a’ and ‘b’ is ‘-’. Resulting expression: /(a-b)+-cde.
+The operator between  ‘c’ and ‘d’ is ‘-’. Resulting expression: /(a-b)+(c-d)e.
+The operator between ‘c-d’ and ‘e’ is +. Resulting expression: /(a-b)((c-d)+e).
+The operator between ‘a-b’ and ‘((c-d)+e)’ is ‘/’. Resulting expression: ((a-b)/((c-d)+e)).
+
+
+#include <bits/stdc++.h>
+
+string prefixToInfixConversion(string &s){
+	stack<string> st;
+	string ans="";
+	reverse(s.begin(),s.end());
+	for (int i=0;i<s.size();i++){
+		char c=s[i];
+		if ((c>='a' && c<='z') || (c>='A' && c<='Z')){
+			st.push(string(1,c));
+		}
+		else{
+			string t1=st.top();
+			st.pop();
+			string t2=st.top();
+			st.pop();
+			string x=t1+string(1,c)+t2;
+
+			//bracket add krne hia isliye ye use kra hai
+			st.push("(" + t1 + c + t2 + ")");
+		}
+	}
+	return st.top();
+}
