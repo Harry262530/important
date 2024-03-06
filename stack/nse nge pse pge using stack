@@ -1,0 +1,110 @@
+class Solution {
+public:
+    long long subArrayRanges(vector<int>& nums) {
+        int n=nums.size();
+        vector<int> nge,pge,nse,pse;
+        stack<int> s1,s2,s3,s4;
+
+        // next greater element
+        for (int i=nums.size()-1;i>=0;i--){
+            if (s1.empty()){
+                nge.push_back(n);
+            }
+            else if(s1.size()>0 && nums[s1.top()]>=nums[i]){
+                nge.push_back(s1.top());
+            }
+            else if (s1.size()>0 && nums[s1.top()]<=nums[i]){
+                while (s1.size()>0 && nums[s1.top()]<=nums[i]){
+                    s1.pop();
+                }
+                if (s1.empty()){
+                    nge.push_back(n);
+                }
+                else{
+                    nge.push_back(s1.top());
+                }
+            }
+            s1.push(i);
+        }
+        reverse(nge.begin(),nge.end());
+
+        // next smaller element
+        for (int i=n-1;i>=0;i--){
+            if (s2.size()==0){
+                nse.push_back(n);
+            }
+            else if (s2.size()>0 && nums[s2.top()]<=nums[i]){
+                nse.push_back(s2.top());
+            }
+            else if (s2.size()>0 && nums[s2.top()]>=nums[i]){
+                while (s2.size()>0 && nums[s2.top()]>=nums[i]){
+                    s2.pop();
+                }
+                if (s2.size()==0){
+                    nse.push_back(n);
+                }
+                else{
+                    nse.push_back(s2.top());
+                }
+            }
+            s2.push(i);
+        }
+        reverse(nse.begin(),nse.end());
+
+
+        // previous greater element
+        for (int i=0;i<n;i++){
+            if (s3.size()==0){
+                pge.push_back(-1);
+            }
+            else if (s3.size()>0 && nums[s3.top()]>=nums[i]){
+                pge.push_back(s3.top());
+            }
+            else if (s3.size()>0 && nums[s3.top()]<=nums[i]){
+                while (s3.size()>0 && nums[i]>=nums[s3.top()]){
+                    s3.pop();
+                }
+                if (s3.size()==0){
+                    pge.push_back(-1);
+                }
+                else{
+                    pge.push_back(s3.top());
+                }
+            }
+            s3.push(i);
+        }
+
+
+    // previous smaller element
+
+        for (int i=0;i<n;i++){
+            if (s4.size()==0){
+                pse.push_back(-1);
+            }
+            else if (s4.size()>0 && nums[s4.top()]<=nums[i]){
+                pse.push_back(s4.top());
+            }
+            else if (s4.size()>0 && nums[s4.top()]>=nums[i]){
+                while (s4.size()>0 && nums[s4.top()]>=nums[i]  ){
+                    s4.pop();
+                }
+                if (s4.size()==0){
+                    pse.push_back(-1);
+                }
+                else{
+                    pse.push_back(s4.top());
+                }
+            }
+            s4.push(i);
+        }
+
+        long long ans1=0,ans2=0;
+        for (int i=0;i<n;i++){
+            ans1+=(i-pse[i])*(nse[i]-i)*nums[i];
+            ans2+=(i-pge[i])*(nge[i]-i)*nums[i];
+        }
+        cout<<ans1<<" "<<ans2;
+        return abs(ans1-ans2);
+        // return ;
+    }
+};
