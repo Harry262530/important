@@ -1,0 +1,39 @@
+there are n imployees, if n is even then make individual or pairs and find total ways, or else odd then just give individual ways
+
+// Online C++ compiler to run C++ program online
+#include <iostream>
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int helper(int ind,bool isodd,vector<int> &used){
+    
+    if (ind==0){
+        return 1;
+    }
+    if (used[ind]==1){
+        return helper(ind-1,isodd,used);
+    }
+    used[ind]=1;
+    int total=0;
+    for (int i=ind-1;i>0;i--){
+        if (used[i]!=1){
+            used[i]=1;
+            total+=helper(ind-1,isodd,used);
+            used[i]=0;
+        }
+    }
+    total+=helper(ind-1,isodd,used);
+    used[ind]=0;
+    return total;
+}
+
+int main() {
+    int n;
+    cin>>n;
+    vector<int> used(n+1,0);
+    bool isodd=false;
+    cout<<helper(n,isodd,used);
+
+    return 0;
+}
