@@ -59,3 +59,31 @@ public:
 };
 
 
+1 tarika almost same bs count na rakh ke j aur i ke sath
+
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        unordered_map<char,int> m;
+        int count=0;
+        int maxi=0;
+        int i=0,j=0;
+        while (j<s.size()){
+            m[s[j]]++;
+            if (m.size()==j-i+1){
+                maxi=max(maxi,j-i+1);
+            }
+            else{
+                while (m.size()<j-i+1){
+                    m[s[i]]--;
+                    if (m[s[i]]==0){
+                        m.erase(s[i]);
+                    }
+                    i++;
+                }
+            }
+            j++;
+        }
+        return maxi;;
+    }
+};
