@@ -1,0 +1,90 @@
+Given a binary array nums and an integer goal, return the number of non-empty subarrays with a sum goal.
+
+A subarray is a contiguous part of the array.
+
+ 
+
+Example 1:
+
+Input: nums = [1,0,1,0,1], goal = 2
+Output: 4
+Explanation: The 4 subarrays are bolded and underlined below:
+[1,0,1,0,1]
+[1,0,1,0,1]
+[1,0,1,0,1]
+[1,0,1,0,1]
+Example 2:
+
+Input: nums = [0,0,0,0,0], goal = 0
+Output: 15
+
+
+pehle jo khud se kra
+
+class Solution {
+public:
+
+    int helper(vector<int> &nums,int goal){
+        int i=0,j=0,ans=0;
+        uint count=0;
+        if (goal<0){
+            return 0;
+        }
+        while (j<nums.size()){
+            count+=nums[j];
+            if (count<=goal){
+                // yaha pe bs antar ye hai ki hamko har index pe us index ko use krke total subarray nikalna hai
+                // kisi index ko use krte hue total subarrays will be j-i+1 or size
+                ans+=j-i+1;
+                j++;
+            }
+            else{
+                while (count>goal ){
+                    count-=nums[i];
+                    i++;
+                }
+                ans+=j-i+1;
+                j++;
+            }
+        }
+        return ans;
+    }
+
+    int numSubarraysWithSum(vector<int>& nums, int goal) {
+        // sbse pehle hame use krna hai total subarray count with atmost k ones
+        // usko subtract kr denge total subarray count with k-1 ones to exact k ones vale count aa jayenge
+        return helper(nums,goal)-helper(nums,goal-1);
+    }
+};
+
+
+
+fir thoda saaf sa code
+
+class Solution {
+public:
+
+    int helper(vector<int> &nums,int goal){
+        int i=0,j=0,ans=0;
+        uint count=0;
+        if (goal<0){
+            return 0;
+        }
+        while (j<nums.size()){
+            count+=nums[j];
+            while (count>goal){
+                count-=nums[i];
+                i++;
+            }
+            ans+=j-i+1;
+            j++;
+        }
+        return ans;
+    }
+
+    int numSubarraysWithSum(vector<int>& nums, int goal) {
+        // sbse pehle hame use krna hai total subarray count with atmost k ones
+        // usko subtract kr denge total subarray count with k-1 ones to exact k ones vale count aa jayenge
+        return helper(nums,goal)-helper(nums,goal-1);
+    }
+};
