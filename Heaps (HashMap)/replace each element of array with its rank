@@ -1,0 +1,60 @@
+Given an array of integers 'ARR’ of size ‘N’. Replace each element of this array with its corresponding rank and return the array.
+
+
+
+The rank of an element is an integer between 1 to ‘N’ inclusive that represents how large the element is in comparison to other elements of the array. The following rules can also define the rank of an element:
+
+
+
+
+Explain
+1. It is an integer starting from 1.
+
+2. The larger the element, the larger the rank. If two elements are equal, their rank must be the same.
+
+3. It should be as small as possible.
+For Example:
+
+Explain
+'ARR' = [4, 7, 2, 90]
+
+Here, 2 is the smallest element, followed by 4, 7, and 90. 
+
+Hence rank of element 2 is 1, element 4 is 2, element 7 is 3, and element 90 is 4.
+
+Hence we return [2, 3, 1, 4].
+Detailed explanation ( Input/output format, Notes, Images )
+Sample Input 1 :
+2
+4 -1
+Sample Output 1 :
+2 1 
+Explanation Of Sample Input 1 :
+
+Explain
+Here, 4 is the largest element and -1 is the smallest element.
+
+So, the rank of 4 is 2.
+
+The rank of -1 is 1.
+
+vector<int> replaceWithRank(vector<int> &arr, int n) {
+    priority_queue<int,vector<int>,greater<int>> q;
+    for (auto x:arr){
+        q.push(x);
+    }
+    unordered_map<int,int> m;
+    int count=1;
+    while (!q.empty()){
+        if (m.find(q.top())==m.end()){
+            m[q.top()]=count;
+            count++;
+        }
+        q.pop();
+    }
+    vector<int> ans;
+    for (int i=0;i<n;i++){
+        ans.push_back(m[arr[i]]);
+    }
+    return ans;
+}
