@@ -38,6 +38,8 @@ Explain
 0
 
 
+khud se kra hua
+
 #include <bits/stdc++.h> 
 
 vector<int> helper(vector<int> &n,vector<int> &m){
@@ -74,4 +76,28 @@ vector<int> mergeKSortedArrays(vector<vector<int>>&kArrays, int k)
         temp=helper(temp,kArrays[i]);
     }
     return temp;
+}
+
+
+better solution
+
+#include <bits/stdc++.h> 
+vector<int> mergeKSortedArrays(vector<vector<int>>&kArrays, int k)
+{
+    priority_queue<pair<int,pair<int,int>>,vector<pair<int,pair<int,int>>>, greater<pair<int,pair<int,int>>>> q;
+    vector<int> ans;
+    for (int i=0;i<kArrays.size();i++){
+        q.push({kArrays[i][0],{i,0}});
+    }
+    while (!q.empty()){
+        auto temp=q.top();
+        q.pop();
+        int x=temp.second.first;
+        int y=temp.second.second;
+        ans.push_back(temp.first);
+        if (y+1<kArrays[x].size()){
+            q.push({kArrays[x][y+1],{x,y+1}});
+        }
+    }
+    return ans;
 }
