@@ -1,0 +1,51 @@
+You are given an array of CPU tasks, each represented by letters A to Z, and a cooling time, n. Each cycle or interval allows the completion of one task. Tasks can be completed in any order, but there's a constraint: identical tasks must be separated by at least n intervals due to cooling time.
+
+​Return the minimum number of intervals required to complete all tasks.
+
+ 
+
+Example 1:
+
+Input: tasks = ["A","A","A","B","B","B"], n = 2
+
+Output: 8
+
+Explanation: A possible sequence is: A -> B -> idle -> A -> B -> idle -> A -> B.
+
+After completing task A, you must wait two cycles before doing A again. The same applies to task B. In the 3rd interval, neither A nor B can be done, so you idle. By the 4th cycle, you can do A again as 2 intervals have passed.
+
+Example 2:
+
+Input: tasks = ["A","C","A","B","D","B"], n = 1
+
+Output: 6
+
+Explanation: A possible sequence is: A -> B -> C -> D -> A -> B.
+
+With a cooling interval of 1, you can repeat a task after just one other task.
+
+
+class Solution {
+public:
+    int leastInterval(vector<char>& tasks, int n) {
+        int arr[26];
+        int maxi=0,maxicount=0;
+        for (auto x:tasks){
+            arr[x-'A']++;
+            if (maxi==arr[x-'A']){
+                maxicount++;
+            }
+            else if (maxi<arr[x-'A']){
+                maxi=arr[x-'A'];
+                maxicount=1;
+            }
+        }
+        // samajne vaale variable ke naam
+        int spaces_count=maxi-1;
+        int count_per_space=n-(maxicount-1);
+        int total_empty=spaces_count*count_per_space;
+        int tasks_avialable=tasks.size()-maxi*maxicount;
+        int idle=max(0,total_empty-tasks_avialable);
+        return idle+tasks.size();
+    }
+};
