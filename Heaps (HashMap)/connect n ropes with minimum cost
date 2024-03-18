@@ -1,0 +1,25 @@
+There are given n ropes of different lengths, we need to connect these ropes into one rope. The cost to connect two ropes is equal to sum of their lengths. We need to connect the ropes with minimum cost.
+
+Sample Input 1:
+    4 4 3 2 6        
+Sample Output 1:
+   29
+
+
+int minCost(int arr[], int n)
+{
+	priority_queue<int,vector<int>,greater<int>>q;
+	for (int i=0;i<n;i++){
+		q.push(arr[i]);
+	}
+	int sum=0;
+	while (q.size()>1){
+		int x1=q.top();
+		q.pop();
+		int x2=q.top();
+		q.pop();
+		sum+=x1+x2;
+		q.push(x1+x2);
+	}
+	return sum;
+}
