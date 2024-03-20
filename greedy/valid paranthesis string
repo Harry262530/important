@@ -1,0 +1,61 @@
+Given a string s containing only three types of characters: '(', ')' and '*', return true if s is valid.
+
+The following rules define a valid string:
+
+Any left parenthesis '(' must have a corresponding right parenthesis ')'.
+Any right parenthesis ')' must have a corresponding left parenthesis '('.
+Left parenthesis '(' must go before the corresponding right parenthesis ')'.
+'*' could be treated as a single right parenthesis ')' or a single left parenthesis '(' or an empty string "".
+ 
+
+Example 1:
+
+Input: s = "()"
+Output: true
+Example 2:
+
+Input: s = "(*)"
+Output: true
+
+
+                                                                                      
+cmax takes care of condition 1
+cmax represents the number of ')' we MIGHT encounter. For cmax, we treat '*' as '('
+So at any point of time, if cmax becomes negative, that means, with all the '(' and '*' we have encountered, there are more ')'. 
+So return false
+Note that we only worry about extra ')' 
+
+cmin takes care of condition 2
+cmin represents the number of ')' we MUST encounter. So the job of cmin is to get to 0 as quickly as possible
+For cmin, we will always assume that '*' is a ')'. So whenever we encounter ')' or '*', we reduce cmin.
+But, cmin can not go below 0. If this happens, we can assume few of the '*'s as empty.
+Don't worry about a condition like ()))) because we have cmax which takes care of this.
+We only worry about extra '('
+So at the end, if cmin is still > 0, this means, with all the '*' and ')' we encountered, there are more '(' present in the string
+So return false
+                                                                                      
+class Solution {
+public:
+    bool checkValidString(string s) {
+        int cmax=0,cmin=0;
+        for (int i=0;i<s.size();i++){
+            if (s[i]=='('){
+                cmax++;
+                cmin++;
+            }
+            else if (s[i]==')'){
+                cmax--;
+                cmin--;
+            }
+            else{
+                cmax++;
+                cmin--;
+            }
+            if (cmax<0){
+                return false;
+            }
+            cmin=max(cmin,0);
+        }
+        return cmin==0;
+    }
+};
