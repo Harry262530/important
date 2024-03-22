@@ -1,0 +1,23 @@
+Problem statement
+You are given an integer 'N'.
+
+
+
+Return 'odd' if the given number 'N' is odd, else return 'even'.
+
+
+
+For Example:
+N=5
+
+Output: odd
+
+
+
+string oddEven(int n){
+    // odd number ki last bit hmesha set hoti hai, agar usko 1 ke sath and kre and vo zero na aaye to mtlb last bit set thi aur odd hai
+    if ((n&1)!=0){
+        return "odd";
+    }
+    return "even";
+}
