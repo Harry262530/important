@@ -1,0 +1,29 @@
+Given an integer n, return true if it is a power of two. Otherwise, return false.
+
+An integer n is a power of two, if there exists an integer x such that n == 2x.
+
+ 
+
+Example 1:
+
+Input: n = 1
+Output: true
+Explanation: 20 = 1
+Example 2:
+
+Input: n = 16
+Output: true
+Explanation: 24 = 16
+
+class Solution {
+public:
+    bool isPowerOfTwo(int n) {
+        // agar ham n-1 krenge to jo pehli set bit hai vo zero ho jayegi aur uske aage ke saare zeroes 1 ho jaynge
+        // ex: 48=110000 and 47=101111
+        // and for power of 2, sirf left most bit hi 1 honi chiyee isliye agar ham n-1 krenge to left most bit 0 ho jayegi aur baki saari 1 ho jayengi, to uske baad and with intital number to get 0 because saare uslte ho gye honge
+        if (n<1){
+            return false;
+        }
+        return (n&(n-1))==0;
+    }
+};
