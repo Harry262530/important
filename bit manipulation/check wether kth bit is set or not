@@ -1,0 +1,19 @@
+Problem statement
+Given a number ‘N’ and a number ‘K’. Return true if ‘K’th bit of number is set, else return false.
+
+
+
+Example:
+
+Explain
+Input: ‘N’ = 5, ‘K’ = 1
+
+Output: YES
+
+5 in binary can be written as 101 and as we can see a first bit from the right of 5 is set so the answer is 'YES'.
+
+bool isKthBitSet(int n, int k)
+{
+    // pehle thik kth bit tak ka 1 le jao like if k=2, then left shift one by 1 place so 10 will be the number, then perform and with the n, which will make all other bit 0, but if the kth bit of n was 1, the the and will become 1 and output will not be zero
+    return (n&(1<<(k-1)))!=0;
+}
