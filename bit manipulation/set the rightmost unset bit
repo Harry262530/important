@@ -1,0 +1,35 @@
+The problem is to find the rightmost bit of a non-negative number 'N' that is currently unset (i.e., has a value of 0) in its binary representation and set it to 1.
+
+
+
+Return the number after setting the rightmost unset bit of 'N'. If there are no unset bits in N's binary representation, then the number should remain unchanged.
+
+
+
+Example:
+N = 5
+Output: 7
+Explanation: The binary representation of 5 is 101. After setting the rightmost unset bit it becomes 111 which is 7.
+
+int setBits(int N){
+    int count=0;
+    int k=1;
+    int length = 0;
+    int n=N;
+    while (n != 0) {
+        n = n >> 1;
+        length++;
+    }
+    while (true){
+        if ((N&k)==0){
+            break;
+        }
+        else{
+            k=k<<1;
+            count++;
+        }
+        if (count == length)
+            return N;
+    }
+    return (N|(1<<count));
+}
