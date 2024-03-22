@@ -1,0 +1,22 @@
+You are given two numbers 'a' and 'b' as input.
+
+
+
+You must swap the values of 'a' and 'b'.
+
+
+
+For Example:
+
+Explain
+Input: 
+'a' = 8, 'b' = 5
+
+Output:
+5 8
+
+void swapNumber(int &a, int &b) {
+	a=a^b;
+	b=a^b; //(initial a^b nor ^b) after this b=a
+	a=a^b; //initially a=a^b then xor with b which is equal to a will give b;
+}
