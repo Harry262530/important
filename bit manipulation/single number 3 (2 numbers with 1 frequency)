@@ -26,6 +26,7 @@ public:
         // aur rightmost set bit of difference number nikalne ke liye pehle x ko x-1 se & kro taaki right most set bit unset ho jaye, fir usko x se xor kr do taki right most set bit me change aaye aur usko position pta chl jaaye
         // fir 2 variable bnao(buckets) aur dono ko last vali set bit se and krke check kro ki vo konse bucket me belong krti hai, jo bhi pairs me jayenge vo dono ek hi bucket me jaake xor ho jayenge aur dono buckets me individuals hi bach jayenge bs
         long xor0=0;
+        long isliye use kra hai kyuki agar single element -2^31 hoga to uska x-1 krke xor krne ko -2^31-1 int ke bahar ho jayega
         for (auto x:nums){
             xor0^=x;
         }
