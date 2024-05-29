@@ -22,6 +22,40 @@ bcde
 Explanation: 
 "bcde" is the answer and "deb" is not a smaller window because the elements of T in the window must occur in order.
 
+khud se kra randomly
+
+class Solution {
+  public:
+    string minWindow(string str1, string str2) {
+        int i=0,j=0,mini=INT_MAX;string ans="";
+        while (j<str1.size()){
+            if (str1[j]==str2[0]){
+                int k=0;
+                i=j;
+                while (j<str1.size() && k<str2.size() ){
+                    if (str1[j]==str2[k]){
+                        k++;
+                    }
+                    j++;
+                }
+                if (k==str2.size()){
+                    if (mini>j-i){
+                        mini=j-i;
+                        ans=str1.substr(i,j-i);
+                    }
+                }
+                j=i;
+            }
+            j++;
+        }
+        return ans;
+    }
+};
+
+
+
+
+
 class Solution {
   public:
     string minWindow(string str1, string str2) {
