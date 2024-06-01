@@ -1,3 +1,31 @@
+last me khud se kra dubara
+
+class Solution {
+public:
+
+    int helper(int ind,vector<vector<int>> &dp,int prev){
+        if (ind<0){
+            return 1;
+        }
+        if (dp[ind][prev]!=-1){
+            return dp[ind][prev];
+        }
+        int temp=0;
+        for (int i=prev;i<5;i++){
+            temp+=helper(ind-1,dp,i);
+        }
+        return dp[ind][prev]=temp;
+    }
+
+    int countVowelStrings(int n) {
+        vector<vector<int>> dp(n,vector<int> (5,-1));
+        return helper(n-1,dp,0);
+    }
+};
+
+
+
+
 class Solution {
 public:
 
