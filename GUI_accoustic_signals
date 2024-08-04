@@ -1,0 +1,1158 @@
+import time
+import librosa
+import tkinter as tk
+from librosa.util import frame
+# from scipy.signal import firwin, convolv
+from scipy.signal import butter, lfilter
+from tkinter import ttk, Menu, filedialog
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import pyaudio
+from collections import deque
+import threading
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib
+# import functools
+
+matplotlib.use('TkAgg')
+
+
+global fs
+global temp
+
+
+class AudioBuffer:
+    RATE = 48000
+    CHUNK = int(RATE / 10)
+
+    def __init__(self, chunks: int = 5) -> None:
+        self.chunks = chunks
+        self.stream = pyaudio.PyAudio().open(
+            format=pyaudio.paInt16,
+            channels=1,
+            rate=self.RATE,
+            input=True,
+            frames_per_buffer=self.CHUNK,
+        )
+        self.thread = threading.Thread(target=self._collect_data, daemon=True)
+        self.frames = deque(maxlen=self.chunks)
+
+    def read_audio(self):
+        # Read audio data from the input stream
+        audio_data = self.stream.read(self.CHUNK)
+        audio_array = np.frombuffer(audio_data, dtype=np.int16)
+        return audio_array
+
+    def __call__(self):
+        return np.concatenate(self.frames)
+
+    def __len__(self):
+        return self.CHUNK * self.chunks
+
+    def is_full(self):
+        return len(self.frames) == self.chunks
+
+    def start(self):
+        self.thread.start()
+        while not self.is_full():  # wait until the buffer is filled
+            time.sleep(0.1)
+
+    def _collect_data(self):
+        while True:
+            raw_data = self.stream.read(self.CHUNK)
+            decoded = np.frombuffer(raw_data, np.int16)
+            self.frames.append(decoded)
+
+def apply_sample_rate(sample_rate_var=None):
+    selected_sample_rate = sample_rate_var1.get()
+    global fs
+            # Convert sample rate options to actual sample rate values (you need to define these values)
+    if selected_sample_rate == "5MSPS":
+        fs = 20000
+    elif selected_sample_rate == "7MSPS":
+        fs = 30000
+    elif selected_sample_rate == "10MSPS":
+        fs = 40000
+    else:
+        fs = 480000  # Default sample rate if selection is invalid
+
+def create_gui(frame1,frame2,frame3,frame4):
+    global voice_signal_temp
+    def create_ae_channel_table(frame):
+
+        # Create a Combobox for threshold options
+        threshold_options = ['20', '20', '40', '60', '80', '100', '200', '300', '400', '500', '1000']
+
+        def get_selected_value():
+            global temp
+            temp = int(dropdown_var.get())
+            print(f"Selected value: {temp}")
+
+        dropdown_var = tk.StringVar()
+        dropdown_var.set(threshold_options[0])
+        threshold_dropdown = ttk.OptionMenu(frame, dropdown_var, *threshold_options)
+        threshold_dropdown.grid(row=2, column=2, padx=10, pady=10)
+        # selected_threshold_value=dropdown_var.get()
+        get_value_button = tk.Button(frame, text="Apply Threshold Value", command=get_selected_value)
+        get_value_button.grid(row=14, column=4)
+
+        # Create column headings
+        ae_channel_label = ttk.Label(frame, text="AE Channel")
+        ae_channel_label.grid(row=0, column=0)
+        threshold_label = ttk.Label(frame, text="Threshold")
+        threshold_label.grid(row=0, column=2)
+        analog_filter_label = ttk.Label(frame, text="Analog Filter")
+        analog_filter_label.grid(row=0, column=5)
+        waveform_setup_label = ttk.Label(frame, text="Waveform Setup")
+        waveform_setup_label.grid(row=0, column=7)
+
+        # AE Channel
+        ae_channel_row1 = ttk.Label(frame, text="1")
+        ae_channel_row1.grid(row=2, column=0)
+
+        # Threshold
+        threshold_type_var = tk.StringVar()
+        threshold_type_var.set("FIXED")
+        threshold_type_label = ttk.Label(frame, text="Type")
+        threshold_type_label.grid(row=1, column=1)
+        threshold_type_option = ttk.OptionMenu(frame, threshold_type_var, "FIXED", "FLOAT", "FIXED")
+        threshold_type_option.grid(row=2, column=1)
+
+        threshold_db_label = ttk.Label(frame, text="Type")
+        threshold_db_label.grid(row=1, column=1)
+        threshold_db_label = ttk.Label(frame, text="db")
+        threshold_db_label.grid(row=1, column=2)
+
+        # Analog Filter
+        lower_label = ttk.Label(frame, text="Lower Frequency")
+        lower_label.grid(row=1, column=4)
+        upper_label = ttk.Label(frame, text="Upper Frequency")
+        upper_label.grid(row=1, column=5)
+
+        # Entry fields for Lower and Upper frequency limits
+        lower_freq_label = ttk.Label(frame, text="Lower Frequency (Hz):")
+        lower_freq_label.grid(row=2, column=4, padx=10, pady=10, sticky="e")
+        global lower_freq_entry, upper_freq_entry, filter_order_var
+        lower_freq_entry = ttk.Entry(frame)
+        lower_freq_entry.grid(row=2, column=4, padx=10, pady=10, sticky="ew")
+
+        upper_freq_label = ttk.Label(frame, text="Upper Frequency (Hz):")
+        upper_freq_label.grid(row=2, column=5, padx=10, pady=10, sticky="e")
+        upper_freq_entry = ttk.Entry(frame)
+        upper_freq_entry.grid(row=2, column=5, padx=10, pady=10, sticky="ew")
+
+        filter_order_var = 900
+
+        # Waveform Setup
+        sample_rate_label = ttk.Label(frame, text="Sample Rate")
+        sample_rate_label.grid(row=1, column=6)
+        pre_trigger_label = ttk.Label(frame, text="Pre-Trigger")
+        pre_trigger_label.grid(row=1, column=7)
+        length_label = ttk.Label(frame, text="Length")
+        length_label.grid(row=1, column=8)
+        time_label = ttk.Label(frame, text="Time (in sec")
+        time_label.grid(row=1, column=9)
+
+        # Sample Rate Options
+
+        sample_rate_options = ["5MSPS", "7MSPS", "10MSPS"]
+
+        global sample_rate_var1
+        sample_rate_var1 = tk.StringVar()
+        sample_rate_var1.set(sample_rate_options[0])
+
+        sample_rate_dropdown = ttk.OptionMenu(frame, sample_rate_var1, *sample_rate_options)
+        sample_rate_dropdown.grid(row=2, column=6, padx=10, pady=10, sticky="ew")
+
+        apply_sample_rate_button = ttk.Button(frame, text="Apply Sample Rate", command=apply_sample_rate)
+        apply_sample_rate_button.grid(row=14, column=5, padx=10, pady=10, sticky="ew")
+
+        # Apply and Plot Button
+        apply_and_plot_button = ttk.Button(frame, text="Apply and Plot", command=update_plot)
+        apply_and_plot_button.grid(row=15, column=8, columnspan=2, padx=10, pady=10, sticky="ew")
+
+        # Pre-Trigger Value
+        pre_trigger_value = "20000"
+
+        pre_trigger_label = ttk.Label(frame, text="Pre-Trigger")
+        pre_trigger_label.grid(row=1, column=7, padx=10, pady=10)
+
+        pre_trigger_value_label = ttk.Label(frame, text=pre_trigger_value)
+        pre_trigger_value_label.grid(row=2, column=7, padx=10, pady=10)
+
+        # Length Options
+        length_options = ["1k", "2k", "3k", "4k", "5k", "6k", "7k", "1k"]
+
+        length_var1 = tk.StringVar()
+        length_var1.set(length_options[0])
+
+        length_dropdown = ttk.OptionMenu(frame, length_var1, *length_options)
+        length_dropdown.grid(row=2, column=8, padx=10, pady=10, sticky="ew")
+
+        # threshold_options = ['2', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22']
+        #
+        # def get_selected_value():
+        #     global temp
+        #     temp = int(dropdown_var.get())
+        #     print(f"Selected value: {temp}")
+        #
+        # dropdown_var = tk.StringVar()
+        # dropdown_var.set(threshold_options[0])
+        # threshold_dropdown = ttk.OptionMenu(frame, dropdown_var, *threshold_options)
+        # threshold_dropdown.grid(row=2, column=2, padx=10, pady=10)
+        # # selected_threshold_value=dropdown_var.get()
+        # get_value_button = tk.Button(frame, text="Apply Threshold Value", command=get_selected_value)
+        # get_value_button.grid(row=14, column=4)
+
+
+
+        time_options = ["1", "0.01", "0.1", "0.3", "0.5", "0.7", "1", "1.5", "2"]
+
+        def get_selected_time():
+            global selected_time
+            selected_time = float(time_var1.get())
+            print(f"Selected value: {selected_time}")
+
+        time_var1 = tk.StringVar()
+        time_var1.set(time_options[0])
+
+        time_dropdown = ttk.OptionMenu(frame, time_var1, *time_options)
+        time_dropdown.grid(row=2, column=9, padx=10, pady=10, sticky="ew")
+        apply_time_button = tk.Button(frame, text="Apply Time", command=get_selected_time)
+        apply_time_button.grid(row=14, column=8, columnspan=2, padx=10, pady=10, sticky="ew")
+
+        # Buttons
+        ok_button = ttk.Button(frame, text="Help")
+        ok_button.grid(row=14, column=6, sticky="e")
+        cancel_button = ttk.Button(frame, text="Cancel")
+        cancel_button.grid(row=14, column=7, sticky="e")
+
+    def create_ae_timing_parameters_table(frame):
+        # Create column headings
+        ae_channel_label = tk.Label(frame, text="AE Channel")
+        ae_channel_label.grid(row=0, column=0)
+        pdt_label = tk.Label(frame, text="PDT")
+        pdt_label.grid(row=0, column=1)
+        hdt_label = tk.Label(frame, text="HDT")
+        hdt_label.grid(row=0, column=2)
+        pdt_label = tk.Label(frame, text="HLT")
+        pdt_label.grid(row=0, column=1)
+        max_duration_label = tk.Label(frame, text="Max Duration")
+        max_duration_label.grid(row=0, column=4)
+        # Data
+        ae_channels = [1, 2]
+        pdt_values = [200, 200]
+        hdt_values = [800, 800]
+        hlt_values = [1000, 1000]
+        max_duration_values = [1000, 1000]
+
+        # Populate the table with data
+        for i in range(len(ae_channels)):
+            ae_channel = tk.Checkbutton(frame)
+            ae_channel.grid(row=i + 1, column=0)
+            pdt = tk.Entry(frame)
+            pdt.insert(0, pdt_values[i])
+            pdt.grid(row=i + 1, column=1)
+            hdt = tk.Entry(frame)
+            hdt.insert(0, hdt_values[i])
+            hdt.grid(row=i + 1, column=2)
+            hlt = tk.Entry(frame)
+            hlt.insert(0, hlt_values[i])
+            hlt.grid(row=i + 1, column=3)
+            max_duration = tk.Entry(frame)
+            max_duration.insert(0, max_duration_values[i])
+            max_duration.grid(row=i + 1, column=4)
+        pass
+
+    def create_data_sets_table(frame):
+        ae_timing_label = ttk.Label(frame, text="AE Timing Parameters")
+        ae_timing_label.grid(row=0, column=0, columnspan=2, pady=10)
+
+        # Create the HIT DATA SET table
+        hit_data_set_label = ttk.Label(frame, text="HIT DATA SET")
+        hit_data_set_label.grid(row=1, column=0, columnspan=2, pady=5)
+
+        options = ["Amplitude", "Energy", "Counts", "Duration", "RMS", "ASL", "Threshold", "Rise Time",
+                   "Counts to Peak",
+                   "Average Frequency", "Reverberation Frequency", "Initiation Frequency", "Signal Strength",
+                   "Absolute Energy"]
+
+        hit_data_set_vars = [tk.IntVar() for _ in options]
+
+        for i, option in enumerate(options):
+            check_button = ttk.Checkbutton(frame, text=option, variable=hit_data_set_vars[i])
+            check_button.grid(row=i + 2, column=0, sticky="w")
+
+        # Hit Parametrics table
+        hit_parametrics_label = ttk.Label(frame, text="Hit Parametrics:")
+        hit_parametrics_label.grid(row=1, column=2, columnspan=2, pady=5)
+
+        hit_parametrics_vars = [tk.IntVar() for _ in range(2)]
+        for i in range(2):
+            check_button = ttk.Checkbutton(frame, text=str(i + 1), variable=hit_parametrics_vars[i])
+            check_button.grid(row=i + 2, column=2, sticky="w")
+
+        # Time Driven Parametrics table
+        time_driven_parametrics_label = ttk.Label(frame, text="Time Driven Parametrics:")
+        time_driven_parametrics_label.grid(row=1, column=4, columnspan=4, pady=5)
+
+        time_driven_parametrics_vars = [tk.IntVar() for _ in range(4)]
+        for i in range(4):
+            check_button = ttk.Checkbutton(frame, text=str(i + 1), variable=time_driven_parametrics_vars[i])
+            check_button.grid(row=i + 2, column=7, sticky="w")
+
+        # Time Driven Channel Data table
+        time_driven_channel_data_label = ttk.Label(frame, text="Time Driven Channel Data:")
+        time_driven_channel_data_label.grid(row=1, column=8, columnspan=4, pady=5)
+
+        time_driven_channel_data_options = ["RMS", "ASL", "Threshold", "Absolute Energy"]
+        time_driven_channel_data_vars = [tk.IntVar() for _ in time_driven_channel_data_options]
+
+        for i, option in enumerate(time_driven_channel_data_options):
+            check_button = ttk.Checkbutton(frame, text=option, variable=time_driven_channel_data_vars[i])
+            check_button.grid(row=i + 2, column=8, sticky="w")
+
+        time_driven_rate_label = ttk.Label(frame, text="Time Driven Rate:")
+        time_driven_rate_label.grid(row=9, column=4, pady=5)
+
+        time_driven_rate_value = tk.Entry(frame)
+        time_driven_rate_value.grid(row=9, column=6)
+
+        time_driven_rate_units = ttk.Combobox(frame, values=["seconds", "milliseconds"])
+        time_driven_rate_units.grid(row=9, column=7)
+        time_driven_rate_units.set("seconds")
+
+        ok_button = ttk.Button(frame, text="Ok")
+        ok_button.grid(row=14, column=5, sticky="e")
+        cancel_button = ttk.Button(frame, text="Cancel")
+        cancel_button.grid(row=14, column=6, sticky="e")
+        apply_button = ttk.Button(frame, text="Apply")
+        apply_button.grid(row=14, column=7, sticky="e")
+        apply_button = ttk.Button(frame, text="Help")
+        apply_button.grid(row=14, column=8, sticky="e")
+
+        # Rest of your code...
+        # Buttons
+        pass
+
+    def create_parametric_setup_table(frame):
+        # Create Parametric Setup tab here
+
+        # Create the table headers
+        channel_label = ttk.Label(frame, text="Channel")
+        channel_label.grid(row=0, column=0, padx=5, pady=5)
+        software_scaling_label = ttk.Label(frame, text="Software Scaling")
+        software_scaling_label.grid(row=0, column=2, columnspan=3, padx=5, pady=5)
+        hardware_scaling_label = ttk.Label(frame, text="Hardware")
+        hardware_scaling_label.grid(row=0, column=7, columnspan=3, padx=5, pady=5)
+        units_label = ttk.Label(frame, text="Units")
+        units_label.grid(row=1, column=5, columnspan=2, padx=5, pady=5)
+        gain_label = ttk.Label(frame, text="Gain")
+        gain_label.grid(row=1, column=7, columnspan=2, padx=5, pady=5)
+        filter_label = ttk.Label(frame, text="Filter")
+        filter_label.grid(row=1, column=8, columnspan=2, padx=5, pady=5)
+
+        # Create the rows and columns for the table
+        channels = ["1", "2", "3", "4"]
+        multipliers = ["1.0000", "1.0000", "1.0000", "1.0000"]
+        offsets = ["0.0000", "0.0000", "0.0000", "0.0000"]
+        units = ["Volts", "Volts", "Volts", "Volts"]
+        gains = ["x1", "x1", "x1", "x1"]
+
+        for i in range(4):
+            # Channel column
+            channel_label = ttk.Label(frame, text=channels[i])
+            channel_label.grid(row=i + 2, column=0, padx=5, pady=5)
+
+            # Software Scaling columns
+            multiplier_label = ttk.Label(frame, text="Multiplier")
+            multiplier_label.grid(row=i + 2, column=1, padx=5, pady=5)
+            multiplier_entry = ttk.Entry(frame)
+            multiplier_entry.insert(0, multipliers[i])
+            multiplier_entry.grid(row=i + 2, column=2, padx=5, pady=5)
+            offset_label = ttk.Label(frame, text="Offset")
+            offset_label.grid(row=i + 2, column=3, padx=5, pady=5)
+            offset_entry = ttk.Entry(frame)
+            offset_entry.insert(0, offsets[i])
+            offset_entry.grid(row=i + 2, column=4, padx=5, pady=5)
+            units_label = ttk.Label(frame, text=units[i])
+            units_label.grid(row=i + 2, column=5, padx=5, pady=5)
+
+            # Hardware columns
+            gain_option = ttk.OptionMenu(frame, tk.StringVar(), "x1", "x10", "x100", "x1000", "x1")
+            gain_option.grid(row=i + 2, column=7, padx=5, pady=5)
+
+            filter_checkboxes = [ttk.Checkbutton(frame) for _ in range(1)]
+            for j, checkbox in enumerate(filter_checkboxes):
+                checkbox.grid(row=i + 2, column=9 + j, padx=5, pady=5)
+
+        # Buttons
+        ok_button = ttk.Button(frame, text="Ok")
+        ok_button.grid(row=22, column=5, columnspan=2, sticky="e", padx=5, pady=10)
+        cancel_button = ttk.Button(frame, text="Cancel")
+        cancel_button.grid(row=22, column=7, columnspan=2, sticky="e", padx=5, pady=10)
+        apply_button = ttk.Button(frame, text="Apply")
+        apply_button.grid(row=22, column=9, columnspan=2, sticky="e", padx=5, pady=10)
+        help_button = ttk.Button(frame, text="Help")
+        help_button.grid(row=22, column=11, columnspan=2, sticky="e", padx=5, pady=10)
+
+        pass
+
+    create_ae_channel_table(frame1)
+    create_ae_timing_parameters_table(frame2)
+    create_data_sets_table(frame3)
+    create_parametric_setup_table(frame4)
+
+
+def plot():
+    for ax in axes.flat:
+        ax.clear()
+    axes[0, 0].plot(np.arange(0, len(voice_signal_temp)) / fs, voice_signal_temp)
+    # axes[0, 0].set_xlim([0, 4])
+
+    print("fs is",fs)
+    axes[0, 1].plot(frequencies_original_temp,fft_result_original_temp[:len(voice_signal_temp) // 2 + 1])
+    axes[0, 1].set_xlim(0, voice_signal_temp.max())
+    # axes[0, 1].set_xlim([0, 4])  # Limit x-axis to 5000 Hz
+    if voice_signal is not None and len(voice_signal) > 0:
+        axes[1, 0].plot(np.arange(0, len(voice_signal)) / fs, voice_signal)
+    # axes[0, 0].set_xlim([0, 4])
+    # axes[1, 0].set_ylim([0, temp])
+        axes[1, 1].plot(frequencies_original,fft_result_original[:len(voice_signal) // 2 + 1])
+        axes[1, 1].set_xlim(0, voice_signal_temp.max())
+    else:
+        axes[1, 0].clear()
+        axes[1, 1].clear()
+    # axes[1, 1].set_xlim([0, 4])
+    # axes[1, 1].set_ylim([0, temp / 10])  # Limit x-axis to 5000 Hz
+    # canvas = FigureCanvasTkAgg(fig, master=root)
+    # canvas_widget = canvas.get_tk_widget()
+    # canvas_widget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    fig.canvas.draw()
+    # time.sleep(5)
+
+
+def calculate_fourier():
+    global voice_signal,low_freq,high_freq,voice_signal_temp,fft_result_original_temp,frequencies_original_temp,fft_result_original,frequencies_original
+    voice=[]
+    voice_signal=np.array(voice)
+    # voice_signal=audio_buffer()
+    voice_signal_temp=audio_buffer()
+    low_freq_str = lower_freq_entry.get()  # Lower frequency limit as a string, e.g., '160Hz'
+    high_freq_str = upper_freq_entry.get()
+    # filter_order_str = filter_order_var.get()  # Filter order as a string
+    default_filter_order = 900
+
+    try:
+        # Try to convert filter_order_str to integer
+        filter_order = int(filter_order_var)
+    except ValueError:
+        # If conversion fails, use the default filter order
+        print("Invalid filter order. Using default value:", default_filter_order)
+        filter_order = default_filter_order
+
+    low_freq = (int(''.join(filter(str.isdigit, low_freq_str))))
+    high_freq = int(''.join(filter(str.isdigit, high_freq_str)))
+    print("low", low_freq)
+    print("high", high_freq)
+    print("max", np.max(voice_signal_temp))
+    print("min", np.min(voice_signal_temp))
+    if (np.any(voice_signal_temp>temp)):
+        voice_signal = voice_signal_temp
+    # print("voice_signal", voice_signal)
+    # fs = 44100
+    # Design the bandpass filter for tabla frequencies
+
+    order = 15  # Filter order
+    cutoff_high = high_freq  # Cutoff frequency in Hz
+    cutoff_low = low_freq
+
+    nyquist = 0.5 * fs
+    # low = low_freq / nyquist
+    # high = high_freq / nyquist
+    # normal_cutoff = cutoff_frequency / nyquist
+    b, a = butter(order, cutoff_low / nyquist, btype='low', analog=False)
+    # b, a = butter(order, cutoff_high / nyquist, btype='high')
+    fft_result_original_temp = np.abs(np.fft.fft(voice_signal_temp) / len(voice_signal_temp))
+    filtered_frequency_data = np.fft.fftfreq(len(voice_signal_temp), 1 / fs)[:len(voice_signal_temp) // 2 + 1]
+    frequencies_original_temp = lfilter(b, a, filtered_frequency_data)
+    if voice_signal is not None and len(voice_signal) > 0:
+        fft_result_original = np.abs(np.fft.fft(voice_signal) / len(voice_signal))
+        frequencies_original = np.fft.fftfreq(len(voice_signal_temp), 1 / fs)[:len(voice_signal) // 2 + 1]
+
+    # filter_coefficients_tabla = firwin(filter_order, [low, high], pass_zero=False)
+    # if np.any(voice_signal_temp > temp):
+    #     # If any value is above the threshold, keep the entire signal
+    #     voice_signal = voice_signal_temp
+    # else:
+    #     # If all values are below the threshold, discard the signal
+    #     voice_signal = None
+    print("values are filtered according to voltage", temp)
+    # print(len(voice_signal))
+
+def update_plot():
+    calculate_fourier()  # Update your data
+    plot()  # Update the plot
+    # if calculate_and_measure(voice_signal, low_freq, high_freq):
+    root.after(int(selected_time*1000), update_plot) 
+    # calculate_fourier()
+# Function to create the AE Timing Parameters tabl
+
+def open_ae_hardware_setup():
+    ae_hardware_window = tk.Toplevel(root)
+    ae_hardware_window.title("AE Hardware Setup - AE USB")
+
+    ae_hardware_tabs = ttk.Notebook(ae_hardware_window)
+    ae_channel_setup_frame = ttk.Frame(ae_hardware_tabs)
+    ae_timing_parameters_frame = ttk.Frame(ae_hardware_tabs)
+    data_sets_frame = ttk.Frame(ae_hardware_tabs)
+    parametric_setup_frame = ttk.Frame(ae_hardware_tabs)
+    # Add tabs to the notebook
+    ae_hardware_tabs.add(ae_channel_setup_frame, text="AE Channel Setup")
+    ae_hardware_tabs.add(ae_timing_parameters_frame, text="AE Timing Parameters")
+    ae_hardware_tabs.add(data_sets_frame, text="Data Sets/Parametrics")
+    ae_hardware_tabs.add(parametric_setup_frame, text="Parametric Setup")
+
+    ae_hardware_tabs.pack(expand=1, fill="both")
+    # Call functions to create tables within each tab
+    # create_ae_channel_table(ae_channel_setup_frame)
+    # create_ae_timing_parameters_table(ae_timing_parameters_frame)
+    # create_data_sets_table(data_sets_frame)
+    # create_parametric_setup_table(parametric_setup_frame)
+    create_gui(ae_channel_setup_frame,ae_timing_parameters_frame,data_sets_frame,parametric_setup_frame)
+# Function to create the Data Sets/Parametrics table
+
+
+
+# Function to create the Parametric Setup table
+
+
+# AEWin GUI
+root = tk.Tk()
+root.title("AEWin GUI")
+
+# AEWin menu bar and menu items (part of the AEWin GUI)
+menu_bar = tk.Menu(root)
+root.config(menu=menu_bar)
+
+file_menu = Menu(menu_bar)
+menu_bar.add_cascade(label="File", menu=file_menu)
+
+
+# Function to create a new layout
+
+
+# lower_freq_var = tk.StringVar()
+
+
+def new_layout(lower_freq_var=None, filter_order_var=None, upper_freq_var=None):
+    # voiceSignal, fs = load_audio_file()
+    # lower_freq = float(lower_freq_var.get())
+    # upper_freq = float(upper_freq_var.get())
+    # filter_order = int(filter_order_var.get())
+    # filter_and_plot_audio(lower_freq, upper_freq, filter_order, voiceSignal, fs)
+
+    # Implement the logic for creating a new layout here
+    pass
+
+
+# Function to open an existing layout
+def open_layout():
+    file_path = filedialog.askopenfilename(filetypes=[("Layout Files", "*.lay")])
+    # Implement the logic for opening a layout here using the file_path
+    pass
+
+
+# Function to save the current layout
+def save_layout():
+    # Implement the logic for saving the layout here
+    pass
+
+
+# Function to save the current layout as a new file
+def save_layout_as():
+    file_path = filedialog.asksaveasfilename(defaultextension=".lay", filetypes=[("Layout Files", "*.lay")])
+    # Implement the logic for saving the layout as a new file using the file_path
+    pass
+
+
+# Function to specify the data folder
+def specify_data_folder():
+    # Implement the logic for specifying data folder here
+    pass
+
+
+# Function to print a page
+def print_page():
+    # Implement the logic for printing a page here
+    pass
+
+
+# Function to print a graph
+def print_graph():
+    # Implement the logic for printing a graph here
+    pass
+
+
+# Function to export to JPG
+def export_to_jpg():
+    # Implement the logic for exporting to JPG here
+    pass
+
+
+# Function to copy to clipboard
+def copy_to_clipboard():
+    # Implement the logic for copying the screen to the clipboard here
+    pass
+
+
+# Function to exit the application
+def exit_application():
+    # Implement the logic for exiting the application here
+    root.quit()
+
+
+# Add menu items to the File menu
+file_menu.add_command(label="New Layout", command=new_layout)
+
+
+def new_layout():
+    # Implement the logic for creating a new layout here
+    pass
+
+
+file_menu.add_command(label="Open Layout...", command=open_layout)
+
+
+def open_layout():
+    file_path = filedialog.askopenfilename(filetypes=[("Layout Files", "*.lay")])
+    # Implement the logic for opening a layout here using the file_path
+    pass
+
+
+file_menu.add_separator()
+file_menu.add_command(label="Save Layout", command=save_layout)
+
+
+def save_layout():
+    # Implement the logic for saving the layout here
+    pass
+
+
+file_menu.add_command(label="Save Layout As...", command=save_layout_as)
+
+
+def save_layout_as():
+    file_path = filedialog.asksaveasfilename(defaultextension=".lay", filetypes=[("Layout Files", "*.lay")])
+    # Implement the logic for saving the layout as a new file using the file_path
+    pass
+
+
+file_menu.add_separator()
+file_menu.add_command(label="Specify Data Folder...", command=specify_data_folder)
+
+
+def specify_data_folder():
+    # Implement the logic for specifying data folder here
+    pass
+
+
+file_menu.add_separator()
+file_menu.add_command(label="Print Page(s)...", command=print_page)
+
+
+def print_page():
+    # Implement the logic for printing a page here
+    pass
+
+
+file_menu.add_command(label="Print Graph...", command=print_graph)
+
+
+def print_graph():
+    # Implement the logic for printing a graph here
+    pass
+
+
+file_menu.add_command(label="Export to JPG...", command=export_to_jpg)
+
+
+def export_to_jpg():
+    # Implement the logic for exporting to JPG here
+    pass
+
+
+file_menu.add_separator()
+file_menu.add_command(label="Copy Screen to Clipboard", command=copy_to_clipboard)
+
+
+def copy_to_clipboard():
+    # Implement the logic for copying the screen to the clipboard here
+    pass
+
+
+file_menu.add_separator()
+file_menu.add_command(label="Exit", command=exit_application)
+
+
+def exit_application():
+    # Implement the logic for exiting the application here
+    root.quit()
+
+
+# Create the Acquisition Setup menu
+acquisition_menu = tk.Menu(menu_bar)
+menu_bar.add_cascade(label="Acquisition Setup", menu=acquisition_menu)
+
+
+# Create a function to handle the Statistics button click
+def show_statistics():
+    # Create a new window for statistics
+    statistics_window = tk.Toplevel(root)
+    statistics_window.title("Statistics")
+
+    # Create a table using labels and checkboxes
+    statistics_displayed = [
+        "Test Title", "Time of Test", "Test Point Time", "Test Point",
+        "AE Hits", "Events", "Waves", "Cumulative Counts",
+        "Cumulative Energy", "Free Space"
+    ]
+
+    parametrics_displayed = ["Parametric 1", "Parametric 2", "Parametric 3", "Parametric 4"]
+    parametrics_var = [tk.BooleanVar() for _ in parametrics_displayed]
+
+    for i, stat in enumerate(statistics_displayed):
+        tk.Label(statistics_window, text=stat).grid(row=i, column=0, sticky="w")
+        tk.Checkbutton(statistics_window).grid(row=i, column=1)
+
+    for i, param in enumerate(parametrics_displayed):
+        tk.Label(statistics_window, text=param).grid(row=i, column=2, sticky="w")
+        tk.Checkbutton(statistics_window).grid(row=i, column=5)
+    # Create OK and Cancel buttons
+    ok_button = tk.Button(statistics_window, text="OK", command=statistics_window.destroy)
+    cancel_button = tk.Button(statistics_window, text="Cancel", command=statistics_window.destroy)
+
+    ok_button.grid(row=len(statistics_displayed), column=0, pady=10)
+    cancel_button.grid(row=len(statistics_displayed), column=2, pady=10)
+
+
+# Add the Statistics button to the Acquisition Setup menu
+acquisition_menu.add_command(label="Statistics", command=show_statistics)
+
+def already_plotted_graph():
+    global axes,canvas,fig,canvas_widget
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    plt.subplots_adjust(hspace=0.3)
+    # axes[0, 0].plot(np.arange(0, len(voice_signal)) / fs, voice_signal)
+    axes[0, 0].set_xlabel('Time (s)')
+    axes[0, 0].set_ylabel('Voltage')
+    axes[0, 0].set_title('Original Voice Signal')
+    axes[0, 0].grid(True)
+    # axes[0, 0].set_xlim([0, 4])
+
+    # axes[0, 0].set_ylim([0, temp])
+
+    # print("fs is", fs)
+
+    # Plot Frequency Spectrum of Original Signal
+    # axes[0, 1].plot(frequencies_original, fft_result_original[:len(voice_signal) // 2 + 1])
+    axes[0, 1].set_xlabel('Frequency (Hz)')
+    axes[0, 1].set_ylabel('Amplitude')
+    axes[0, 1].set_title('Fourier Transform (Original Voice Signal)')
+    axes[0, 1].grid(True)
+    # axes[0, 1].set_xlim([0, 5000])  # Limit x-axis to 5000 Hz
+    # axes[0, 1].set_ylim([0, temp])
+    # Plot Filtered Voice Signal
+    # axes[1, 0].plot(np.arange(0, len(filtered_tabla_signal)) / fs, filtered_tabla_signal)
+    axes[1, 0].set_xlabel('Time (s)')
+    axes[1, 0].set_ylabel('Voltage')
+    axes[1, 0].set_title('Filtered Voice Signal')
+    axes[1, 0].grid(True)
+    # axes[1, 0].set_ylim([0, temp])
+
+    # Plot Frequency Spectrum of Filtered Signal
+    # axes[1, 1].plot(frequencies_filtered, fft_result_filtered[:len(filtered_tabla_signal) // 2 + 1])
+    axes[1, 1].set_xlabel('Frequency (Hz)')
+    axes[1, 1].set_ylabel('Amplitude')
+    axes[1, 1].set_title('Frequency Spectrum (Filtered Voice Signal)')
+    axes[1, 1].grid(True)
+    # axes[1, 1].set_xlim([0, 5000])
+    # axes[1, 1].set_ylim([0, temp / 10])
+
+
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas_widget = canvas.get_tk_widget()
+    canvas_widget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    # time.sleep(5)
+    # canvas_widget.destroy()
+
+
+already_plotted_graph()
+
+acquisition_menu.add_command(label="AE Hardware", command=open_ae_hardware_setup)
+acquisition_menu.add_command(label="Channel Group Setup")
+acquisition_menu.add_command(label="Title")
+acquisition_menu.add_command(label="Statistics")
+acquisition_menu.add_command(label="Logistics Information")
+acquisition_menu.add_command(label="Auto File-Close")
+acquisition_menu.add_command(label="Disk Space Management")
+acquisition_menu.add_command(label="Alarm Preferences")
+acquisition_menu.add_command(label="Multivariate Alarm Setup")
+acquisition_menu.add_command(label="FFT Alarm")
+acquisition_menu.add_command(label="Alarm Status/Test")
+acquisition_menu.add_command(label="ASL Alarm")
+acquire_replay_menu = Menu(menu_bar)
+menu_bar.add_cascade(label="Acquire/Replay", menu=acquire_replay_menu)
+
+
+# Function to handle the Acquire button click
+def acquire_data():
+    # Implement the logic for acquiring data here
+    pass
+
+
+# Function to handle the Acquire to Existing File button click
+def acquire_to_existing_file():
+    # Implement the logic for acquiring data to an existing file here
+    pass
+
+
+# Function to handle the Replay button click
+def replay_data():
+    # Implement the logic for replaying data here
+    pass
+
+
+# Function to handle the Resume button click
+def resume_replay():
+    # Implement the logic to resume replay here
+    pass
+
+
+# Function to handle the Pause button click
+def pause_replay():
+    # Implement the logic to pause replay here
+    pass
+
+
+# Function to handle the Abort button click
+def abort_replay():
+    # Implement the logic to abort replay here
+    pass
+
+
+# Function to handle the Time Mark button click
+def time_mark():
+    # Implement the logic to add a time mark here
+    pass
+
+
+# Function to handle the Parametric Time Mark Comment button click
+def parametric_time_mark_comment():
+    # Implement the logic to add a parametric time mark comment here
+    pass
+
+
+# Function to handle the Time Mark User Comment button click
+def time_mark_user_comment():
+    # Implement the logic to add a user comment to a time mark here
+    pass
+
+
+# Function to handle the Display Last Alarm button click
+def display_last_alarm():
+    # Implement the logic to display the last alarm here
+    pass
+
+
+# Function to handle the Waveform Event Synchronization button click
+def waveform_event_synchronization():
+    # Implement the logic for waveform event synchronization here
+    pass
+
+
+# Function to handle the Pause Replay on Time Mark button click
+def pause_replay_on_time_mark():
+    # Implement the logic to pause replay on a time mark here
+    pass
+
+
+# Function to handle the Pause Replay on Pause button click
+def pause_replay_on_pause():
+    # Implement the logic to pause replay on a pause event here
+    pass
+
+
+# Add the buttons to the Acquire/Replay menu
+acquire_replay_menu.add_command(label="Acquire", command=acquire_data)
+acquire_replay_menu.add_command(label="Acquire to Existing File", command=acquire_to_existing_file)
+acquire_replay_menu.add_command(label="Replay", command=replay_data)
+acquire_replay_menu.add_command(label="Resume", command=resume_replay)
+acquire_replay_menu.add_command(label="Pause", command=pause_replay)
+acquire_replay_menu.add_command(label="Abort", command=abort_replay)
+acquire_replay_menu.add_command(label="Time Mark", command=time_mark)
+acquire_replay_menu.add_command(label="Parametric Time Mark Comment", command=parametric_time_mark_comment)
+acquire_replay_menu.add_command(label="Time Mark User Comment", command=time_mark_user_comment)
+acquire_replay_menu.add_command(label="Display Last Alarm", command=display_last_alarm)
+acquire_replay_menu.add_command(label="Waveform Event Synchronization", command=waveform_event_synchronization)
+acquire_replay_menu.add_command(label="Pause Replay on Time Mark", command=pause_replay_on_time_mark)
+acquire_replay_menu.add_command(label="Pause Replay on Pause", command=pause_replay_on_pause)
+
+graphing_menu = Menu(menu_bar)
+menu_bar.add_cascade(label="Graphing", menu=graphing_menu)
+
+graphing_menu.add_command(label="Graph Setup")
+
+
+# Function to create the Graph Setup window
+def create_graph_setup_window():
+    graph_setup_window = tk.Toplevel(root)
+    graph_setup_window.title("Graph Setup")
+    # Create tabs for different settings
+    tabs = ttk.Notebook(graph_setup_window)
+
+    channels_tab = ttk.Frame(tabs)
+    event_groups_tab = ttk.Frame(tabs)
+    clustering_tab = ttk.Frame(tabs)
+    miscellaneous_tab = ttk.Frame(tabs)
+    alarms_tab = ttk.Frame(tabs)
+    # Create tabs for Channels, Event Groups, Clustering, Miscellaneous, and Alarms
+    tabs.add(channels_tab, text="Channels")
+    tabs.add(event_groups_tab, text="Event Groups")
+    tabs.add(clustering_tab, text="Clustering")
+    tabs.add(miscellaneous_tab, text="Miscellaneous")
+    tabs.add(alarms_tab, text="Alarms")
+
+    # Event Groups Tab
+    individual_channels_label = tk.Label(event_groups_tab, text="Individual Channels")
+    individual_channels_label.pack()
+
+    individual_channel_checkboxes = []
+    for i in range(1, 11):
+        checkbox = tk.Checkbutton(event_groups_tab, text=str(i))
+        checkbox.pack(side=tk.LEFT)
+    # Add widgets and settings to each tab
+    type_label = tk.Label(event_groups_tab, text="Type")
+    type_label.pack()
+
+    type_options = ["2D(Histogram)", "2D Binned Scatter", "2D Colored Scatter", "Windowed Histogram", "3D Histogram",
+                    "3D Scatter(Point Plot)", "Waveform", "Power Spectrum", "Sphere", "Felicity"]
+    type_variable = tk.StringVar(event_groups_tab)
+    type_dropdown = ttk.Combobox(event_groups_tab, textvariable=type_variable, values=type_options)
+    type_dropdown.pack()
+
+    y_axis_label = tk.Label(event_groups_tab, text="Y(Vertical)Axis")
+    y_axis_label.pack()
+
+    y_axis_options = ["Primary", "Secondary-1", "Secondary-2", "Secondary-3", "Secondary-4", "Secondary-5"]
+    y_axis_variable = tk.StringVar(event_groups_tab)
+    y_axis_dropdown = ttk.Combobox(event_groups_tab, textvariable=y_axis_variable, values=y_axis_options)
+    y_axis_dropdown.pack()
+
+    y_axis_parameter_label = tk.Label(event_groups_tab, text="Y Axis Parameter")
+    y_axis_parameter_label.pack()
+
+    y_axis_parameter_options = ["Rms", "Average Frequency", "Counts to Peak", "Reverberation Frequency",
+                                "Initiation Frequency", "Signal Strength", "Absolute Energy", "Frequency Centroid",
+                                "Peak Frequency", "Parametric 1", "Parametric 2", "Parametric 3", "Parametric 4",
+                                "Partial Power 1", "Partial Power 2", "Partial Power 3", "Partial Power 4",
+                                "Hits", "Events", "Waves", "X Position", "Y Position"]
+    y_axis_parameter_variable = tk.StringVar(event_groups_tab)
+    y_axis_parameter_dropdown = ttk.Combobox(event_groups_tab, textvariable=y_axis_parameter_variable,
+                                             values=y_axis_parameter_options)
+    y_axis_parameter_dropdown.pack()
+
+    max_value_label = tk.Label(event_groups_tab, text="Max Value")
+    max_value_label.pack()
+
+    max_value_entry = tk.Entry(event_groups_tab)
+    max_value_entry.pack()
+
+    min_value_label = tk.Label(event_groups_tab, text="Min Value")
+    min_value_label.pack()
+
+    min_value_entry = tk.Entry(event_groups_tab)
+    min_value_entry.pack()
+
+    # Add checkboxes for fixing max and min values here
+
+    # Add checkboxes for log scale, manual, etc., here
+
+    tabs.pack(expand=1, fill="both")
+
+    # Create OK, Apply, and Help buttons
+    ok_button = tk.Button(graph_setup_window, text="Ok", command=display_help)
+    ok_button.pack(side=tk.LEFT, padx=10)
+    apply_button = tk.Button(graph_setup_window, text="Apply", command=apply_changes)
+    apply_button.pack(side=tk.LEFT, padx=10)
+    help_button = tk.Button(graph_setup_window, text="Help", command=display_help)
+    help_button.pack(side=tk.LEFT, padx=10)
+
+
+def apply_changes():
+    # Implement logic to apply changes here
+    pass
+
+
+def display_help():
+    # Implement logic to display help here
+    pass
+
+
+# Create a button to open the Graph Setup window
+graph_setup_button = tk.Button(root, text="Graph Setup", command=create_graph_setup_window)
+graph_setup_button.pack()
+graphing_menu.add_command(label="Graph Filters")
+graphing_menu.add_command(label="Colors")
+graphing_menu.add_command(label="New Graph")
+graphing_menu.add_command(label="Move Graph or Table")
+graphing_menu.add_command(label="Close Graph or Table")
+graphing_menu.add_command(label="Cut Graph or Table")
+graphing_menu.add_command(label="Copy Graph or Table")
+graphing_menu.add_command(label="Clear Graph")
+graphing_menu.add_command(label="Clear Page")
+graphing_menu.add_command(label="Clear All")
+
+# Create a menu for Tables
+tables_menu = Menu(menu_bar)
+menu_bar.add_cascade(label="Tables", menu=tables_menu)
+
+
+# Create a function for the Amplitude Distributive Cumulative button
+def show_amplitude_distributive_cumulative():
+    # Implement the logic to display the Amplitude Distributive Cumulative table here
+    pass
+
+
+# Create a function for the Amplitude Distribution Range button
+def show_amplitude_distribution_range():
+    # Implement the logic to display the Amplitude Distribution Range table here
+    pass
+
+
+# Create a function for the Overview Page button
+def show_overview_page():
+    # Implement the logic to display the Overview Page table here
+    pass
+
+
+# Add the "Amplitude Distributive Cumulative" button
+tables_menu.add_command(label="Amplitude Distributive Cumulative", command=show_amplitude_distributive_cumulative)
+
+# Add the "Amplitude Distribution Range" button
+tables_menu.add_command(label="Amplitude Distribution Range", command=show_amplitude_distribution_range)
+
+# Add the "Overview Page" button
+tables_menu.add_command(label="Overview Page", command=show_overview_page)
+view_menu = Menu(menu_bar)
+menu_bar.add_cascade(label="View", menu=view_menu)
+
+# Add submenus and items under the View menu
+view_menu.add_command(label="Acq.Controls")
+view_menu.add_command(label="Multiplexer")
+view_menu.add_command(label="Line Listing Display")
+view_menu.add_command(label="Page Bar")
+view_menu.add_command(label="Status Bar")
+view_menu.add_command(label="ToolBar")
+view_menu.add_command(label="Statistics Bar")
+
+# Create a Utilities menu
+utilities_menu = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Utilities", menu=utilities_menu)
+
+# Add submenus and items under the Utilities menu
+utilities_menu.add_command(label="WinPost")
+utilities_menu.add_command(label="Sigma3D")
+utilities_menu.add_command(label="Report")
+utilities_menu.add_command(label="Statistics")
+utilities_menu.add_command(label="ASCII Output")
+utilities_menu.add_command(label="ASCII Waveforms")
+utilities_menu.add_command(label="Time Order/Repair")
+utilities_menu.add_command(label="Combine Data Files")
+utilities_menu.add_command(label="Link Separate Data Files")
+utilities_menu.add_command(label="Waveform Filtering and Extraction")
+utilities_menu.add_command(label="Remove Messages")
+utilities_menu.add_command(label="Change Title")
+utilities_menu.add_command(label="Data File Filter")
+utilities_menu.add_command(label="Operator Log Management")
+utilities_menu.add_command(label="Parametric TM Management")
+utilities_menu.add_command(label="Split File")
+utilities_menu.add_command(label="Parametric Rainflow")
+utilities_menu.add_command(label="PACShare Dispersion Curves")
+utilities_menu.add_command(label="PACShare STFFT")
+utilities_menu.add_command(label="PACShare Wavelets")
+utilities_menu.add_command(label="First Hit")
+
+# Create a Page menu
+page_menu = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Page", menu=page_menu)
+
+# Add submenus and items under the Page menu
+page_menu.add_command(label="New Page")
+page_menu.add_command(label="Insert Page")
+page_menu.add_command(label="Delete Page")
+page_menu.add_command(label="Rename Page")
+page_menu.add_separator()
+page_menu.add_command(label="Next Page")
+page_menu.add_command(label="Prior Page")
+page_menu.add_separator()
+page_menu.add_command(label="Add Sequential Channel Graphs")
+
+# Create a Window menu
+window_menu = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Window", menu=window_menu)
+
+# Add submenus and items under the Window menu
+window_menu.add_command(label="Maximize Graph")
+window_menu.add_command(label="Restore Graph")
+window_menu.add_separator()
+window_menu.add_command(label="Cascade")
+window_menu.add_command(label="Title Horizontal")
+window_menu.add_command(label="Title Vertical")
+window_menu.add_separator()
+window_menu.add_command(label="Arrange Icons")
+window_menu.add_command(label="Window Titles")
+window_menu.add_command(label="Window Style")
+
+# Create a Help menu
+help_menu = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Help", menu=help_menu)
+
+# Add submenus and items under the Help menu
+help_menu.add_command(label="Help Topics")
+help_menu.add_command(label="Shortcut Key List")
+help_menu.add_command(label="Browse for README Files")
+help_menu.add_separator()
+help_menu.add_command(label="Options")
+help_menu.add_separator()
+help_menu.add_command(label="About AEwin for USB")
+
+# Define the variables globally
+lower_freq_var = None  # Initialize lower_freq_var as None
+
+
+# Function to read audio file
+def load_audio_file():
+    # Ask the user to select a .wav file using a file dialog
+    audio_file_path = filedialog.askopenfilename(title="Select a .wav file", filetypes=[("WAV files", "*.wav")])
+    # Read the recorded .wav file
+    voiceSignal, fs = librosa.load(audio_file_path, sr=None)
+    return voiceSignal, fs
+
+
+audio_buffer = AudioBuffer(chunks=10)
+audio_buffer.start()
+print("before")
+# for _ in range(10):
+voice_signal_temp = audio_buffer.read_audio()
+
+def calculate_and_measure(voice_signal_temp,low_freq,high_freq):
+    within_range = np.all((voice_signal_temp >= low_freq) & (voice_signal_temp <= high_freq))
+    return within_range
+
+
+# audio_call()
+print("after")
+
+
+root.mainloop()
